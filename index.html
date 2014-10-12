@@ -3,10 +3,65 @@
 <head>
 	<script src="Block.js"></script>
 	<script src="Board.js"></script>
+	<style>
+	
+	body {
+		font-family: "Courier New";
+		background: #ccc;
+	}
+
+	div.board {
+		text-align: center;
+		
+	}
+
+	div.line {
+		margin: 0 auto;
+		width: 50%;
+	}
+
+	div.block {
+		display: inline-block;
+		background-color: #ddd;
+		border: 1px solid black;
+		margin: 1px;
+		padding: 5px;
+		width: 30px;
+		height: 30px;
+		text-align: center;
+		border-radius: 5px;
+		box-shadow: 2px 2px 5px #999;
+	}
+
+	div.red {
+		background-color: red;
+	}
+
+	div.yellow {
+		background-color: yellow;
+	}
+
+	div.blue {
+		background-color: blue;
+	}
+
+	div.green {
+		background-color: green;
+	}
+
+	div.silver {
+		background-color: #999;
+	}
+
+	div.purple {
+		background-color: purple;
+	}
+	</style>
+</head>
+<body>
+	<div id="board"></div>
 	<script>
 		new Board();
 	</script>
-</head>
-<body>
 </body>
 </html>

@@ -26,7 +26,12 @@ Block.prototype.isValidType = function(type){
 /** Returns a random, valid type */
 Block.prototype.getRandomType = function(){
 	return types[Math.round(Math.random() * (types.length - 1))];
-}
+};
+
+/** Returns type */
+Block.prototype.getType = function(){
+	return this.type;
+};
 
 /** To String */
 Block.prototype.toString = function(){

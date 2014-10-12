@@ -13,7 +13,7 @@ function Board(width, height){
 
 	this.board = [];
 	this.generate();
-	this.printBoard();
+	this.renderBoard();
 }
 
 /** Generate empty board */
@@ -42,7 +42,7 @@ Board.prototype.generate = function(){
 };
 
 /** Prints board on console */
-Board.prototype.printBoard = function(){
+Board.prototype.printConsoleBoard = function(){
 	for (var line = 0; line < this.height; line++){
 		var textLine = "";
 		for (var col = 0; col < this.width; col++ ){
@@ -52,10 +52,36 @@ Board.prototype.printBoard = function(){
 	}
 };
 
+/** Renders board on HTML */
+Board.prototype.renderBoard = function(){
+
+	var body = document.body;
+
+	for (var line = this.height - 1; line >= 0; line--){
+		var lineElt = document.createElement("div");
+		lineElt.className = "line";
+		for (var col = 0; col < this.width; col++ ){
+			
+			var block = this.board[line][col];
+			var blockElt = document.createElement("div");
+			var classNames = "block";
+
+			blockElt.innerText = this.blockToString(block);
+			
+			if (block != null){
+				classNames += " " + block.getType();
+			}
+			blockElt.className = classNames;
+			lineElt.appendChild(blockElt);
+		}
+		body.appendChild(lineElt);
+	}
+};
+
 /** Returns block to string */
 Board.prototype.blockToString = function(Block){
 	if (Block == null) 
-		return "   ";
+		return "[-]";
 	else
 		return Block.toString();
 }
