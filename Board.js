@@ -64,12 +64,14 @@ Board.prototype.renderBoard = function(){
 			
 			var block = this.board[line][col];
 			var blockElt = document.createElement("div");
-			var classNames = "block";
+			var classNames = "square";
 
-			blockElt.innerText = this.blockToString(block);
+			//blockElt.innerText = this.blockToString(block);
 			
+			if (col == 0) classNames += " " + "first-line-block";
+
 			if (block != null){
-				classNames += " " + block.getType();
+				classNames += " block " + block.getType();
 			}
 			blockElt.className = classNames;
 			lineElt.appendChild(blockElt);
