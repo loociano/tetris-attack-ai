@@ -1,5 +1,12 @@
-/** Types */
-var types = ["blue", "yellow", "red", "purple", "green", "grey"];
+/** 
+ * Block Class 
+ *
+ * Luciano Rubio <luciano@loociano.com>
+ * Oct 2014
+ */
+
+/** Block Types */
+var types = ["blue", "yellow", "red", "purple", "green", "silver"];
 
 /** Constructor */
 function Block(type){
@@ -20,3 +27,8 @@ Block.prototype.isValidType = function(type){
 Block.prototype.getRandomType = function(){
 	return types[Math.round(Math.random() * (types.length - 1))];
 }
+
+/** To String */
+Block.prototype.toString = function(){
+	return "[" + this.type.charAt(0).toUpperCase() + "]";
+};
