@@ -15,6 +15,11 @@ function Block(type){
 		this.type = this.getRandomType() : this.type = type;
 }
 
+/** Sets the block at a different type */
+Block.prototype.setDistinct = function(type){
+	this.type = this.getDistinctRandomType(type);
+};
+
 /** Returns true if the type is valid */
 Block.prototype.isValidType = function(type){
 	for (var i = 0; i < types.length; i++){
@@ -28,6 +33,13 @@ Block.prototype.getRandomType = function(){
 	return types[Math.round(Math.random() * (types.length - 1))];
 };
 
+/** Returns a random, valid type different from a given type */
+Block.prototype.setDistinctRandomType = function(){
+	var otherTypes = types.slice(0); // Copy types
+	otherTypes.splice(types.indexOf(this.type), 1); // Remove given type
+	this.type = otherTypes[Math.round(Math.random() * (otherTypes.length - 1))];
+}
+
 /** Returns type */
 Block.prototype.getType = function(){
 	return this.type;
@@ -40,5 +52,6 @@ Block.prototype.toString = function(){
 
 /** Compare type */
 Block.prototype.compareType = function(otherBlock){
+	if (otherBlock == null) return false;
 	return this.type == otherBlock.getType();
 };

@@ -19,6 +19,7 @@ function Board(width, height){
 }
 
 /** Looks for a line of 3 or more contiguous blocks */
+// Better algorithm: search by line and column
 Board.prototype.combineBlockLines = function(){
 	for (var line = 0; line < this.height; line++){
 		for (var col = 0; col < this.width; col++ ){
@@ -103,10 +104,67 @@ Board.prototype.generate = function(){
 	for (var line = 0; line < this.height; line++){
 		for (var col = 0; col < this.width; col++ ){
 			if (this.isBlockUnderneath(line, col)){
-				this.board[line][col] = this.generateBlock(line);	
+				this.board[line][col] = this.generateBlock(line);
+				if (this.isComboLeft(line,col) || this.isComboDown(line,col)){
+					var block = this.board[line][col];
+					block.setDistinctRandomType();  
+				}
 			}
 		}
 	}
+};
+
+/** Returns true if there are 3 horizontal blocks with same type */
+Board.prototype.isComboLeft = function(line, col){
+	if (col == 0) return false;
+
+	var block = this.board[line][col];
+	var count = 1;
+
+	// Iterate blocks on left side
+	for(var w = col - 1; w >= 0; w--){
+		
+		var leftBlock = this.board[line][w];
+		
+		if (leftBlock == null) 
+			return false;
+
+		if (leftBlock.compareType(block)){
+			count++;
+			if (count > 2){
+				break;
+			} else {
+				continue;
+			}
+		} else {
+			return false;
+		}
+	}
+	return true;
+};
+
+/** Returns true if there are 3 vertical blocks with same type */
+Board.prototype.isComboDown = function(line, col){
+	if (line == 0) return false;
+
+	var block = this.board[line][col];
+	var count = 1;
+	
+	// Iterate blocks on left side
+	for(var h = line - 1; h >= 0; h--){
+		var lowerBlock = this.board[h][col];
+		if (lowerBlock.compareType(block)){
+			count++;
+			if (count > 2){
+				break;
+			} else {
+				continue;
+			}
+		} else {
+			return false;
+		}
+	}
+	return true;
 };
 
 /** Prints board on console */
