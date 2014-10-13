@@ -37,3 +37,8 @@ Block.prototype.getType = function(){
 Block.prototype.toString = function(){
 	return "[" + this.type.charAt(0).toUpperCase() + "]";
 };
+
+/** Compare type */
+Block.prototype.compareType = function(otherBlock){
+	return this.type == otherBlock.getType();
+};
