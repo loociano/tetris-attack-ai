@@ -15,11 +15,6 @@ function Block(type){
 		this.type = this.getRandomType() : this.type = type;
 }
 
-/** Sets the block at a different type */
-Block.prototype.setDistinct = function(type){
-	this.type = this.getDistinctRandomType(type);
-};
-
 /** Returns true if the type is valid */
 Block.prototype.isValidType = function(type){
 	for (var i = 0; i < types.length; i++){
@@ -34,9 +29,11 @@ Block.prototype.getRandomType = function(){
 };
 
 /** Returns a random, valid type different from a given type */
-Block.prototype.setDistinctRandomType = function(){
+Block.prototype.setDistinctRandomType = function(forbiddenTypes){
 	var otherTypes = types.slice(0); // Copy types
-	otherTypes.splice(types.indexOf(this.type), 1); // Remove given type
+	for(var i = 0; i < forbiddenTypes.length; i++){
+		otherTypes.splice(types.indexOf(forbiddenTypes[i]), 1); // Remove given type
+	}
 	this.type = otherTypes[Math.round(Math.random() * (otherTypes.length - 1))];
 }
 

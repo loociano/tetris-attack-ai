@@ -15,7 +15,86 @@ function Board(width, height){
 	this.generate();
 	
 	this.renderBoard();
-	this.combineBlockLines();
+	//this.combineBlockLines();
+}
+
+/** Returns board's height */
+Board.prototype.getHeight = function(){
+	return this.height;
+};
+
+/** Returns board's width */
+Board.prototype.getWidth = function(){
+	return this.width;
+};
+
+/** Returns block given a line and column */
+Board.prototype.getBlock = function(line, col){
+	return this.board[line][col];
+};
+
+/** Returns true if a line contains a given block type */
+Board.prototype.hasBlockInLine = function(type, line){
+	for (var col = 0; col < this.width; col++){
+		var block = this.board[line][col];
+		if (block != null && block.getType() == type) 
+			return true;
+	}
+	return false;
+};
+
+/** Returns true if a column contains a given block type */
+Board.prototype.hasBlockInCol = function(type, col){
+	for (var line = 0; line < this.height; line++){
+		var block = this.board[line][col];
+		if (block != null && block.getType() == type) 
+			return true;
+	}
+	return false;
+};
+
+/** Returns the number of blocks given a type */
+Board.prototype.countBlocks = function(type){
+	
+	var count = 0;
+
+	for (var line = 0; line < this.height; line++){
+		for (var col = 0; col < this.width; col++){
+			var block = this.board[line][col];
+			if (block != null){
+				if (block.getType() == type) count++;
+			}
+		}
+	}
+	return count;
+}
+
+/** Returns the number of blocks given a type, line and col */
+Board.prototype.countBlocksInLine = function(type, line){
+	
+	var count = 0;
+
+	for (var col = 0; col < this.width; col++){
+		var block = this.board[line][col];
+		if (block != null){
+			if (block.getType() == type) count++;
+		}
+	}
+	return count;
+};
+
+/** Returns the number of blocks given a type, line and col */
+Board.prototype.countBlocksInCol = function(type, col){
+	
+	var count = 0;
+
+	for (var line = 0; line < this.height; line++){
+		var block = this.board[line][col];
+		if (block != null){
+			if (block.getType() == type) count++;
+		}
+	}
+	return count;
 }
 
 /** Looks for a line of 3 or more contiguous blocks */
@@ -102,15 +181,32 @@ Board.prototype.generate = function(){
 	this.generateEmpty();
 
 	for (var line = 0; line < this.height; line++){
-		for (var col = 0; col < this.width; col++ ){
+		for (var col = 0; col < this.width; col++){
 			if (this.isBlockUnderneath(line, col)){
-				this.board[line][col] = this.generateBlock(line);
-				if (this.isComboLeft(line,col) || this.isComboDown(line,col)){
-					var block = this.board[line][col];
-					block.setDistinctRandomType();  
+				var block = this.generateBlock(line);
+				if (block != null){
+					this.board[line][col] = block;
+					this.setCorrectType(line, col);
 				}
 			}
 		}
+	}
+};
+
+/** Sets block correct type to avoid combos on generation */
+Board.prototype.setCorrectType = function(line, col){
+
+	var forbiddenTypes = [];
+
+	if (this.isComboLeft(line,col)){
+		forbiddenTypes.push(this.board[line][col-1].getType());
+	}
+	if (this.isComboDown(line,col)){
+		forbiddenTypes.push(this.board[line-1][col].getType());
+	}
+	if (forbiddenTypes.length > 0){
+		var block = this.board[line][col];
+		block.setDistinctRandomType(forbiddenTypes);
 	}
 };
 
