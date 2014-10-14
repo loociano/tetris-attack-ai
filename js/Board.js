@@ -35,6 +35,15 @@ Board.prototype.setBlock = function(block, line, col){
 	this.board[line][col] = block;
 };
 
+Board.prototype.setAllBlocksNone = function(){
+	for (var line = 0; line < this.height; line++){
+		for (var col = 0; col < this.width; col++){
+			var block = this.board[line][col];
+			if (block != null) block.setState("none");
+		}
+	}
+};
+
 /** Returns true if a line contains a given block type */
 Board.prototype.hasBlockInLine = function(type, line){
 	for (var col = 0; col < this.width; col++){

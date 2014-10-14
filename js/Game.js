@@ -14,14 +14,10 @@
 
  Game.prototype.start = function(){
 
- 	// Game loop
- 	
- 	// Action
- 	// TODO
+ 	this.renderer.refresh();
 
- 	// Set Board State
  	this.board.searchCombos();
 
- 	// Render
- 	this.renderer.renderBoard();
+ 	var parent = this;
+ 	window.setTimeout(function(){parent.renderer.refresh()}, 500);
  };

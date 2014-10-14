@@ -9,12 +9,26 @@ function Renderer(board){
 	this.board = board;
 }
 
+/** Refreshes */
+Renderer.prototype.refresh = function(){
+	this.clear();
+	this.renderBoard();
+};
+
+/** Clears the content */
+Renderer.prototype.clear = function(){
+	var container = document.getElementById("game");
+	if (container != null)
+		container.remove();
+};
+
 /** Renders board on HTML */
 Renderer.prototype.renderBoard = function(){
 
 	var body = document.body;
 	var container = document.createElement("div");
 	container.className = "container";
+	container.id = "game";
 
 	var board = document.createElement("div");
 	board.className = "board";

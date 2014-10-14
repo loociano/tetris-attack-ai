@@ -23,6 +23,11 @@ Block.prototype.getState = function(){
 	return this.state;
 }
 
+Block.prototype.setState = function(state){
+	if (this.isValidState(state))
+		this.state = state;
+}
+
 Block.prototype.setStateCombo = function(){
 	return this.state = "combo";
 }
@@ -39,6 +44,14 @@ Block.prototype.setStateNone = function(){
 Block.prototype.isValidType = function(type){
 	for (var i = 0; i < types.length; i++){
 		if (type == types[i]) return true;
+	}
+	return false;
+};
+
+/** Returns true if the state is valid */
+Block.prototype.isValidState = function(state){
+	for (var i = 0; i < states.length; i++){
+		if (state == states[i]) return true;
 	}
 	return false;
 };
