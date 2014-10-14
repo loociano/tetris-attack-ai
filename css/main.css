@@ -35,6 +35,11 @@ div.line {
 	box-shadow: 2px 2px 5px #999;
 }
 
+.combo {
+	opacity: 0.4;
+	border-color: white;
+}
+
 .red {
 	background-color: red;
 }

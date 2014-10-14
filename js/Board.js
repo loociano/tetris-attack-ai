@@ -13,8 +13,6 @@ function Board(width, height){
 
 	this.board = [];
 	this.generate();
-
-	this.searchHorizontalCombos();
 }
 
 /** Returns board's height */
@@ -101,29 +99,14 @@ Board.prototype.countBlocksInCol = function(type, col){
 	return count;
 }
 
-/** Looks for a line of 3 or more contiguous blocks */
-// Better algorithm: search by line and column
-Board.prototype.combineBlockLines = function(){
-	for (var line = 0; line < this.height; line++){
-		for (var col = 0; col < this.width; col++ ){
-			var block = this.board[line][col];
-			if (block != null){
-				// Look up, down, left, right
-				var direction = ["up", "down", "left", "right"];
-				for (var i = 0; i < direction.length; i++){
-					if (this.isNextBlockEqual(line, col, direction[i])){
-						// TODO. Keep searching and combine combo
-					}
-				}
-			}
-		}
-	}
+/** Searches combos */
+Board.prototype.searchCombos = function(){
+	this.searchHorizontalCombos();
+	this.searchVerticalCombos();
 };
 
+/** Searches horizontal combos */
 Board.prototype.searchHorizontalCombos = function(){
-	
-	var previousBlock = null;
-	var count = 1;
 
 	for (var line = 0; line < this.height; line++){
 
@@ -133,18 +116,59 @@ Board.prototype.searchHorizontalCombos = function(){
 		for (var col = 0; col < this.width; col++){
 			var block = this.board[line][col];
 			if (block != null){
-				if (block.compareType(previousBlock) || col == this.width - 1){
+				if (block.compareType(previousBlock)){
 					count++;
-					continue;
-				} else {
-					if (count > 2){
-						while(count > 0){
-							var a = col-count;
-							console.log(line + " " + a);
-							this.board[line][col-count].setStateCombo();
-							count--;
+					if (col < this.width - 1) // Last line handling
+						continue;
+				}
+			}
+			if (count > 2){
+				while(count > 0){
+					var offset = 0;
+					if (block != null){
+						if ((col == this.width - 1) && block.compareType(previousBlock)){
+							// Block in last column is part of the combo: include in the count
+							offset = 1;
 						}
 					}
+					this.board[line][col-count+offset].setStateCombo();
+					count--;
+				}
+			}
+			count = 1;
+			previousBlock = block;
+		}
+	}
+};
+
+/** Searches vertical combos */
+Board.prototype.searchVerticalCombos = function(){
+
+	for (var col = 0; col < this.width; col++){
+
+		var previousBlock = null;
+		var count = 1;
+
+		for (var line = 0; line < this.height; line++){
+			var block = this.board[line][col];
+			if (block != null){
+				if (block.compareType(previousBlock)){
+					count++;
+					if (line < this.height - 1) // Last line handling
+						continue;
+				}
+			}
+			if (count > 2){
+				while(count > 0){
+					var offset = 0;
+					if (block != null){
+						if ((line == this.height - 1) && block.compareType(previousBlock)){
+							// Block in last line is part of the combo: include in the count
+							offset = 1;
+						}
+					}
+					this.board[line-count+offset][col].setStateCombo();
+					count--;
 				}
 			}
 			count = 1;

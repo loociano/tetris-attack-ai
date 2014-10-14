@@ -13,5 +13,15 @@
  }
 
  Game.prototype.start = function(){
+
+ 	// Game loop
+ 	
+ 	// Action
+ 	// TODO
+
+ 	// Set Board State
+ 	this.board.searchCombos();
+
+ 	// Render
  	this.renderer.renderBoard();
  };
