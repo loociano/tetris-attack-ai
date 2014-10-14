@@ -6,7 +6,7 @@
  */
 
 /** Block Types */
-var types = ["blue", "yellow", "red", "purple", "green", "silver"];
+var types = ["blue", "yellow", "red", "purple", "green", "silver", "blue"];
 
 /** Block States */
 var states = ["none", "left", "right", "down", "combo"];
