@@ -33,6 +33,11 @@ Board.prototype.getBlock = function(line, col){
 	return this.board[line][col];
 };
 
+/** Sets block given a line and column */
+Board.prototype.getBlock = function(block, line, col){
+	this.board[line][col] = block;
+};
+
 /** Returns true if a line contains a given block type */
 Board.prototype.hasBlockInLine = function(type, line){
 	for (var col = 0; col < this.width; col++){
@@ -228,7 +233,7 @@ Board.prototype.isComboLeft = function(line, col){
 		if (leftBlock.compareType(block)){
 			count++;
 			if (count > 2){
-				break;
+				return true;
 			} else {
 				continue;
 			}
@@ -236,7 +241,7 @@ Board.prototype.isComboLeft = function(line, col){
 			return false;
 		}
 	}
-	return true;
+	return false;
 };
 
 /** Returns true if there are 3 vertical blocks with same type */
@@ -252,7 +257,7 @@ Board.prototype.isComboDown = function(line, col){
 		if (lowerBlock.compareType(block)){
 			count++;
 			if (count > 2){
-				break;
+				return true;
 			} else {
 				continue;
 			}
@@ -260,7 +265,7 @@ Board.prototype.isComboDown = function(line, col){
 			return false;
 		}
 	}
-	return true;
+	return false;
 };
 
 /** Prints board on console */
@@ -312,9 +317,10 @@ Board.prototype.generateBlock = function(line){
 	// Empty block probability: increases linearly with height
 	// Height 0 => probability 0
 	// Height maxHeight + 1 => probability 1
-	this.emptyBlockProb = line / (2*this.height);
+	//var emptyBlockProb = line / (2*this.height);
+	var emptyBlockProb = -1;
 
-	if (Math.random() > this.emptyBlockProb)
+	if (Math.random() > emptyBlockProb)
 		return new Block();
 	else
 		return null; 

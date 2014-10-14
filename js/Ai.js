@@ -12,6 +12,7 @@
  	this.getPoints();
  }
 
+/** Returns the number of points */
  Ai.prototype.getPoints = function(){
  	for(var i = 0; i < this.targetTypes.length; i++){
  		console.log(this.targetTypes[i] + ": " + this.getLinePoints(this.targetTypes[i]) + " " + this.getColPoints(this.targetTypes[i]));

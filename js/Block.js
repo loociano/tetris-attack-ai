@@ -30,6 +30,7 @@ Block.prototype.getRandomType = function(){
 
 /** Returns a random, valid type different from a given type */
 Block.prototype.setDistinctRandomType = function(forbiddenTypes){
+
 	var otherTypes = types.slice(0); // Copy types
 	for(var i = 0; i < forbiddenTypes.length; i++){
 		otherTypes.splice(types.indexOf(forbiddenTypes[i]), 1); // Remove given type
