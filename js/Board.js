@@ -9,13 +9,12 @@
 /** Constructor */
 function Board(width, height){
 	(width == undefined) ? this.width = 6 : this.width = width;
-	(height == undefined) ? this.height = 8 : this.height = height;
+	(height == undefined) ? this.height = 10 : this.height = height;
 
 	this.board = [];
 	this.generate();
-	
-	this.renderBoard();
-	//this.combineBlockLines();
+
+	this.searchHorizontalCombos();
 }
 
 /** Returns board's height */
@@ -34,7 +33,7 @@ Board.prototype.getBlock = function(line, col){
 };
 
 /** Sets block given a line and column */
-Board.prototype.getBlock = function(block, line, col){
+Board.prototype.setBlock = function(block, line, col){
 	this.board[line][col] = block;
 };
 
@@ -121,6 +120,39 @@ Board.prototype.combineBlockLines = function(){
 	}
 };
 
+Board.prototype.searchHorizontalCombos = function(){
+	
+	var previousBlock = null;
+	var count = 1;
+
+	for (var line = 0; line < this.height; line++){
+
+		var previousBlock = null;
+		var count = 1;
+
+		for (var col = 0; col < this.width; col++){
+			var block = this.board[line][col];
+			if (block != null){
+				if (block.compareType(previousBlock) || col == this.width - 1){
+					count++;
+					continue;
+				} else {
+					if (count > 2){
+						while(count > 0){
+							var a = col-count;
+							console.log(line + " " + a);
+							this.board[line][col-count].setStateCombo();
+							count--;
+						}
+					}
+				}
+			}
+			count = 1;
+			previousBlock = block;
+		}
+	}
+};
+
 /** Returns true if the contiguous block is equal given a direction 
 	Direction can be up, down, left, right */
 Board.prototype.isNextBlockEqual = function(line, col, direction){
@@ -185,13 +217,14 @@ Board.prototype.generate = function(){
 
 	this.generateEmpty();
 
-	for (var line = 0; line < this.height; line++){
+	// Leave top-line empty
+	for (var line = 0; line < this.height - 1; line++){
 		for (var col = 0; col < this.width; col++){
 			if (this.isBlockUnderneath(line, col)){
 				var block = this.generateBlock(line);
 				if (block != null){
 					this.board[line][col] = block;
-					this.setCorrectType(line, col);
+					//this.setCorrectType(line, col);
 				}
 			}
 		}
@@ -233,6 +266,7 @@ Board.prototype.isComboLeft = function(line, col){
 		if (leftBlock.compareType(block)){
 			count++;
 			if (count > 2){
+				console.log("left combo on " + line + " " + col);
 				return true;
 			} else {
 				continue;
@@ -257,6 +291,7 @@ Board.prototype.isComboDown = function(line, col){
 		if (lowerBlock.compareType(block)){
 			count++;
 			if (count > 2){
+				console.log("down combo on " + line + " " + col);
 				return true;
 			} else {
 				continue;
@@ -266,41 +301,6 @@ Board.prototype.isComboDown = function(line, col){
 		}
 	}
 	return false;
-};
-
-/** Prints board on console */
-Board.prototype.printConsoleBoard = function(){
-	for (var line = 0; line < this.height; line++){
-		var textLine = "";
-		for (var col = 0; col < this.width; col++ ){
-			textLine += " " + this.blockToString(this.board[this.height-line-1][col]) + " ";
-		}
-		console.log(textLine);
-	}
-};
-
-/** Renders board on HTML */
-Board.prototype.renderBoard = function(){
-
-	var body = document.body;
-
-	for (var line = this.height - 1; line >= 0; line--){
-		var lineElt = document.createElement("div");
-		lineElt.className = "line";
-		for (var col = 0; col < this.width; col++ ){
-			
-			var block = this.board[line][col];
-			var blockElt = document.createElement("div");
-			var classNames = "square";
-			
-			if (col == 0) classNames += " first-line-block";
-			if (block != null) classNames += " block " + block.getType();
-			
-			blockElt.className = classNames;
-			lineElt.appendChild(blockElt);
-		}
-		body.appendChild(lineElt);
-	}
 };
 
 /** Returns block to string */

@@ -2,8 +2,13 @@ body {
 	background: #ddd;
 }
 
+.container {
+	width: 500px;
+	margin: 0 auto;
+}
+
 div.board {
-	text-align: center;
+	position: relative;
 }
 
 div.line {

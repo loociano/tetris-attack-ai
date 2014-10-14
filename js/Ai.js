@@ -9,7 +9,7 @@
  	this.board = board;
  	this.targetTypes = this.filterTypes();
 
- 	this.getPoints();
+ 	//this.getPoints();
  }
 
 /** Returns the number of points */
