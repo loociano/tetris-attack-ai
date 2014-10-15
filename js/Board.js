@@ -108,6 +108,36 @@ Board.prototype.countBlocksInCol = function(type, col){
 	return count;
 };
 
+/** Clean Combos and puts empty blocks */
+Board.prototype.explodeCombos = function(){
+	for (var line = 0; line < this.height; line++){
+		for (var col = 0; col < this.width; col++){
+			var block = this.board[line][col];
+			if (block != null){
+				if (block.isStateCombo()) {
+					block.explode();
+				}
+			}
+		}
+	}
+};
+
+/** Moves down all blocks that have empty space underneath */
+Board.prototype.applyGravity = function(){
+	for (var line = 0; line < this.height; line++){
+		for (var col = 0; col < this.width; col++){
+			var block = this.board[line][col];
+			if (block != null){
+				if (!this.isBlockUnderneath(line, col)){
+					block.fall();
+					//this.board[line][col] = null;
+					//this.board[this.nextAvailableLine(line,col)][col] = block;
+				}
+			}
+		}
+	}
+};
+
 /** Searches combos */
 Board.prototype.searchCombos = function(){
 	this.searchHorizontalCombos();
@@ -124,7 +154,7 @@ Board.prototype.searchHorizontalCombos = function(){
 
 		for (var col = 0; col < this.width; col++){
 			var block = this.board[line][col];
-			if (block != null){
+			if (block != null && !block.isExploding()){
 				if (block.compareType(previousBlock)){
 					count++;
 					if (col < this.width - 1) // Last line handling
@@ -160,7 +190,7 @@ Board.prototype.searchVerticalCombos = function(){
 
 		for (var line = 0; line < this.height; line++){
 			var block = this.board[line][col];
-			if (block != null){
+			if (block != null && !block.isExploding()){
 				if (block.compareType(previousBlock)){
 					count++;
 					if (line < this.height - 1) // Last line handling
@@ -355,4 +385,13 @@ Board.prototype.generateBlock = function(line){
 Board.prototype.isBlockUnderneath = function(line, col){
 	if (line == 0) return true;
 	return this.board[(line-1)][col] != null;
+};
+
+/** Returns the next available position (line) underneath 
+	given the block coordinates */
+Board.prototype.nextAvailableLine = function(line, col){
+	for (var l = line; l >= 0; l--){
+		if (this.isBlockUnderneath(l, col)) 
+			return l;
+	}
 };

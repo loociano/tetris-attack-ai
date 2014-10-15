@@ -17,12 +17,13 @@
 
  Game.prototype.start = function(){
 
- 	this.renderer.refresh();
-
- 	this.board.searchCombos();
+ 	this.renderer.renderBoard();
 
  	var parent = this;
- 	window.setTimeout(function(){
+ 	window.setInterval(function(){
+ 		parent.board.applyGravity();
+ 		parent.board.searchCombos();
  		parent.renderer.refresh();
+ 		parent.board.explodeCombos();
  	}, 500);
  };
