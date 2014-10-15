@@ -1,5 +1,5 @@
-/** 
- * Block Class 
+/**
+ * Block Class
  *
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
@@ -14,31 +14,36 @@ var states = ["none", "left", "right", "down", "combo"];
 /** Constructor */
 function Block(type){
 
-	(type == undefined || !this.isValidType(type)) ? 
+	(type == undefined || !this.isValidType(type)) ?
 		this.type = this.getRandomType() : this.type = type;
 	this.state = "none";
 }
 
+/** Get State */
 Block.prototype.getState = function(){
 	return this.state;
-}
+};
 
+/** Set state */
 Block.prototype.setState = function(state){
 	if (this.isValidState(state))
 		this.state = state;
-}
+};
 
+/** Set state as combo */
 Block.prototype.setStateCombo = function(){
 	return this.state = "combo";
-}
+};
 
+/** Returns true if state is combo */
 Block.prototype.isStateCombo = function(){
 	return this.state == "combo";
-}
+};
 
+/** Set state as none */
 Block.prototype.setStateNone = function(){
 	return this.state = "none";
-}
+};
 
 /** Returns true if the type is valid */
 Block.prototype.isValidType = function(type){
@@ -69,10 +74,10 @@ Block.prototype.setDistinctRandomType = function(forbiddenTypes){
 		var index = types.indexOf(forbiddenTypes[i]);
 		if (index != -1){
 			otherTypes.splice(index, 1); // Remove given type
-		}	
+		}
 	}
 	this.type = otherTypes[Math.round(Math.random() * (otherTypes.length - 1))];
-}
+};
 
 /** Returns type */
 Block.prototype.getType = function(){

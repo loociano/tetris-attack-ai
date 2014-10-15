@@ -1,7 +1,7 @@
-/** 
+/**
  * Board Class
  * Requires: Block
- * 
+ *
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
@@ -48,7 +48,7 @@ Board.prototype.setAllBlocksNone = function(){
 Board.prototype.hasBlockInLine = function(type, line){
 	for (var col = 0; col < this.width; col++){
 		var block = this.board[line][col];
-		if (block != null && block.getType() == type) 
+		if (block != null && block.getType() == type)
 			return true;
 	}
 	return false;
@@ -58,7 +58,7 @@ Board.prototype.hasBlockInLine = function(type, line){
 Board.prototype.hasBlockInCol = function(type, col){
 	for (var line = 0; line < this.height; line++){
 		var block = this.board[line][col];
-		if (block != null && block.getType() == type) 
+		if (block != null && block.getType() == type)
 			return true;
 	}
 	return false;
@@ -66,7 +66,7 @@ Board.prototype.hasBlockInCol = function(type, col){
 
 /** Returns the number of blocks given a type */
 Board.prototype.countBlocks = function(type){
-	
+
 	var count = 0;
 
 	for (var line = 0; line < this.height; line++){
@@ -78,11 +78,11 @@ Board.prototype.countBlocks = function(type){
 		}
 	}
 	return count;
-}
+};
 
 /** Returns the number of blocks given a type, line and col */
 Board.prototype.countBlocksInLine = function(type, line){
-	
+
 	var count = 0;
 
 	for (var col = 0; col < this.width; col++){
@@ -96,7 +96,7 @@ Board.prototype.countBlocksInLine = function(type, line){
 
 /** Returns the number of blocks given a type, line and col */
 Board.prototype.countBlocksInCol = function(type, col){
-	
+
 	var count = 0;
 
 	for (var line = 0; line < this.height; line++){
@@ -106,7 +106,7 @@ Board.prototype.countBlocksInCol = function(type, col){
 		}
 	}
 	return count;
-}
+};
 
 /** Searches combos */
 Board.prototype.searchCombos = function(){
@@ -186,15 +186,15 @@ Board.prototype.searchVerticalCombos = function(){
 	}
 };
 
-/** Returns true if the contiguous block is equal given a direction 
+/** Returns true if the contiguous block is equal given a direction
 	Direction can be up, down, left, right */
 Board.prototype.isNextBlockEqual = function(line, col, direction){
-	
+
 	var isEqual = false;
 	var block = this.board[line][col];
-	
+
 	switch(direction){
-		
+
 		case "up":
 			if (line < this.height - 1){
 				var upperBlock = this.board[line+1][col];
@@ -212,7 +212,7 @@ Board.prototype.isNextBlockEqual = function(line, col, direction){
 				}
 			}
 			break;
-		
+
 		case "left":
 			if (col > 0){
 				var leftBlock = this.board[line][col-1];
@@ -221,7 +221,7 @@ Board.prototype.isNextBlockEqual = function(line, col, direction){
 				}
 			}
 			break;
-		
+
 		case "right":
 			if (col < this.width - 1){
 				var rightBlock = this.board[line][col+1];
@@ -290,10 +290,10 @@ Board.prototype.isComboLeft = function(line, col){
 
 	// Iterate blocks on left side
 	for(var w = col - 1; w >= 0; w--){
-		
+
 		var leftBlock = this.board[line][w];
-		
-		if (leftBlock == null) 
+
+		if (leftBlock == null)
 			return false;
 
 		if (leftBlock.compareType(block)){
@@ -317,7 +317,7 @@ Board.prototype.isComboDown = function(line, col){
 
 	var block = this.board[line][col];
 	var count = 1;
-	
+
 	// Iterate blocks on left side
 	for(var h = line - 1; h >= 0; h--){
 		var lowerBlock = this.board[h][col];
@@ -336,14 +336,6 @@ Board.prototype.isComboDown = function(line, col){
 	return false;
 };
 
-/** Returns block to string */
-Board.prototype.blockToString = function(Block){
-	if (Block == null) 
-		return "[-]";
-	else
-		return Block.toString();
-}
-
 /** Generate Blocks */
 Board.prototype.generateBlock = function(line){
 
@@ -355,7 +347,7 @@ Board.prototype.generateBlock = function(line){
 	if (Math.random() > emptyBlockProb)
 		return new Block();
 	else
-		return null; 
+		return null;
 };
 
 /** Returns true if there is a block underneath

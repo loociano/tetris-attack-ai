@@ -1,7 +1,7 @@
-/** 
+/**
  * Cursor
  * Requires: Block
- * 
+ *
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
@@ -37,4 +37,4 @@
 
  	this.board.setBlock(rightBlock, this.x, this.y);
  	this.board.setBlock(leftBlock, this.x + 1, this.y);
- }
+ };

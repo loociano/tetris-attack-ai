@@ -1,7 +1,7 @@
-/** 
+/**
  * Game Class
  * Requires: Board
- * 
+ *
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
@@ -19,5 +19,7 @@
  	this.board.searchCombos();
 
  	var parent = this;
- 	window.setTimeout(function(){parent.renderer.refresh()}, 500);
+ 	window.setTimeout(function(){
+ 		parent.renderer.refresh();
+ 	}, 500);
  };
