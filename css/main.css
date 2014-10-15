@@ -10,11 +10,13 @@ body {
 }
 
 .container {
-	width: 24em;
+	width: 24.9em;
 	margin: 0 auto;
 }
 
 div.board {
+	width: 22.2em;
+	height: 37em;
 	position: absolute;
 	background: #bbb;
 	border: 1.5em solid #eee;
@@ -26,10 +28,11 @@ div.line {
 }
 
 .first-line-block {
-	clear: both;
+	/*clear: both;*/
 }
 
-.square {
+.tile {
+	position: absolute;
 	float: left;
 	border: 1px solid transparent;
 	margin: 0;
@@ -41,46 +44,299 @@ div.line {
 }
 
 .empty {
-	border: 5px solid rgb(189, 189, 189);
+	border: 0.35em solid rgb(189, 189, 189);
 	background-color: #B8B8B8;
 	border-radius: 10px;
 }
 
 .block {
-	border: 5px solid #4c4c4c;
+	border: 0.35em solid #4c4c4c;
 	box-shadow: 2px 2px 5px #999;
 }
 
-.combo {
+/** Line 0: move 33.3em down */
+.tile.position-0-0 {
+	transform: translate(0em, 33.3em);
+}
+
+.tile.position-0-1 {
+	transform: translate(3.7em, 33.3em);
+}
+
+.tile.position-0-2 {
+	transform: translate(7.4em, 33.3em);
+}
+
+.tile.position-0-3 {
+	transform: translate(11.1em, 33.3em);
+}
+
+.tile.position-0-4 {
+	transform: translate(14.8em, 33.3em);
+}
+
+.tile.position-0-5 {
+	transform: translate(18.5em, 33.3em);
+}
+
+/** Line 1: move 29.6em down */
+.tile.position-1-0 {
+	transform: translate(0em, 29.6em);
+}
+
+.tile.position-1-1 {
+	transform: translate(3.7em, 29.6em);
+}
+
+.tile.position-1-2 {
+	transform: translate(7.4em, 29.6em);
+}
+
+.tile.position-1-3 {
+	transform: translate(11.1em, 29.6em);
+}
+
+.tile.position-1-4 {
+	transform: translate(14.8em, 29.6em);
+}
+
+.tile.position-1-5 {
+	transform: translate(18.5em, 29.6em);
+}
+
+/** Line 2: move 25.9em down */
+.tile.position-2-0 {
+	transform: translate(0em, 25.9em);
+}
+
+.tile.position-2-1 {
+	transform: translate(3.7em, 25.9em);
+}
+
+.tile.position-2-2 {
+	transform: translate(7.4em, 25.9em);
+}
+
+.tile.position-2-3 {
+	transform: translate(11.1em, 25.9em);
+}
+
+.tile.position-2-4 {
+	transform: translate(14.8em, 25.9em);
+}
+
+.tile.position-2-5 {
+	transform: translate(18.5em, 25.9em);
+}
+
+/** Line 3: move 22.2em down */
+.tile.position-3-0 {
+	transform: translate(0em, 22.2em);
+}
+
+.tile.position-3-1 {
+	transform: translate(3.7em, 22.2em);
+}
+
+.tile.position-3-2 {
+	transform: translate(7.4em, 22.2em);
+}
+
+.tile.position-3-3 {
+	transform: translate(11.1em, 22.2em);
+}
+
+.tile.position-3-4 {
+	transform: translate(14.8em, 22.2em);
+}
+
+.tile.position-3-5 {
+	transform: translate(18.5em, 22.2em);
+}
+
+/** Line 4: move 18.5em down */
+.tile.position-4-0 {
+	transform: translate(0em, 18.5em);
+}
+
+.tile.position-4-1 {
+	transform: translate(3.7em, 18.5em);
+}
+
+.tile.position-4-2 {
+	transform: translate(7.4em, 18.5em);
+}
+
+.tile.position-4-3 {
+	transform: translate(11.1em, 18.5em);
+}
+
+.tile.position-4-4 {
+	transform: translate(14.8em, 18.5em);
+}
+
+.tile.position-4-5 {
+	transform: translate(18.5em, 18.5em);
+}
+
+/** Line 5: move 14.8em down */
+.tile.position-5-0 {
+	transform: translate(0em, 14.8em);
+}
+
+.tile.position-5-1 {
+	transform: translate(3.7em, 14.8em);
+}
+
+.tile.position-5-2 {
+	transform: translate(7.4em, 14.8em);
+}
+
+.tile.position-5-3 {
+	transform: translate(11.1em, 14.8em);
+}
+
+.tile.position-5-4 {
+	transform: translate(14.8em, 14.8em);
+}
+
+.tile.position-5-5 {
+	transform: translate(18.5em, 14.8em);
+}
+
+/** Line 6: move 11.1em down */
+.tile.position-6-0 {
+	transform: translate(0em, 11.1em);
+}
+
+.tile.position-6-1 {
+	transform: translate(3.7em, 11.1em);
+}
+
+.tile.position-6-2 {
+	transform: translate(7.4em, 11.1em);
+}
+
+.tile.position-6-3 {
+	transform: translate(11.1em, 11.1em);
+}
+
+.tile.position-6-4 {
+	transform: translate(14.8em, 11.1em);
+}
+
+.tile.position-6-5 {
+	transform: translate(18.5em, 11.1em);
+}
+
+/** Line 7: move 7.4em down */
+.tile.position-7-0 {
+	transform: translate(0em, 7.4em);
+}
+
+.tile.position-7-1 {
+	transform: translate(3.7em, 7.4em);
+}
+
+.tile.position-7-2 {
+	transform: translate(7.4em, 7.4em);
+}
+
+.tile.position-7-3 {
+	transform: translate(11.1em, 7.4em);
+}
+
+.tile.position-7-4 {
+	transform: translate(14.8em, 7.4em);
+}
+
+.tile.position-7-5 {
+	transform: translate(18.5em, 7.4em);
+}
+
+/** Line 8: move 3.7em down */
+.tile.position-8-0 {
+	transform: translate(0em, 3.7em);
+}
+
+.tile.position-8-1 {
+	transform: translate(3.7em, 3.7em);
+}
+
+.tile.position-8-2 {
+	transform: translate(7.4em, 3.7em);
+}
+
+.tile.position-8-3 {
+	transform: translate(11.1em, 3.7em);
+}
+
+.tile.position-8-4 {
+	transform: translate(14.8em, 3.7em);
+}
+
+.tile.position-8-5 {
+	transform: translate(18.5em, 3.7em);
+}
+
+/** Line 9: move 0em down */
+.tile.position-9-0 {
+	transform: translate(0em, 0em);
+}
+
+.tile.position-9-1 {
+	transform: translate(3.7em, 0em);
+}
+
+.tile.position-9-2 {
+	transform: translate(7.4em, 0em);
+}
+
+.tile.position-9-3 {
+	transform: translate(11.1em, 0em);
+}
+
+.tile.position-9-4 {
+	transform: translate(14.8em, 0em);
+}
+
+.tile.position-9-5 {
+	transform: translate(18.5em, 0em);
+}
+
+
+/* Combos */
+.block.combo {
 	opacity: 0.2;
 }
 
-.red {
+/* Colours */
+.block.red {
 	background-color: rgb(255, 42, 42);
 	border-color: rgb(191, 12, 12);
 }
 
-.yellow {
+.block.yellow {
 	background-color: yellow;
 	border-color: rgb(236, 175, 28);
 }
 
-.blue {
+.block.blue {
 	background-color: rgb(51, 188, 241);
 	border-color: rgb(8, 101, 165);
 }
 
-.green {
+.block.green {
 	background-color: rgb(64, 192, 64);
 	border-color: rgb(24, 131, 30);
 }
 
-.silver {
+.block.silver {
 	background-color: #999;
 	border-color: rgb(97, 97, 97);
 }
 
-.purple {
+.block.purple {
 	background-color: rgb(230, 70, 230);
 	border-color: rgb(147, 52, 147);
 }

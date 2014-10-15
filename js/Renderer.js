@@ -34,25 +34,30 @@ Renderer.prototype.renderBoard = function(){
 	board.className = "board";
 
 	for (var line = this.board.getHeight() - 1; line >= 0; line--){
-		var lineElt = document.createElement("div");
-		lineElt.className = "line";
+		//var lineElt = document.createElement("div");
+		//lineElt.className = "line";
 		for (var col = 0; col < this.board.getWidth(); col++){
 			
 			var block = this.board.getBlock(line, col);
 			var blockElt = document.createElement("div");
-			var classNames = "square";
-			
-			if (col == 0) classNames += " first-line-block";
+
+			var classNames = "tile " + this.getPositionClass(line, col);
+
 			if (block != null)
 				classNames += " block " + block.getType() + " " + block.getState();
 			else
 				classNames += " empty";
 			
 			blockElt.className = classNames;
-			lineElt.appendChild(blockElt);
+			//lineElt.appendChild(blockElt);
+			board.appendChild(blockElt);
 		}
-		board.appendChild(lineElt);
-		container.appendChild(board);
-		body.appendChild(container);
+		//board.appendChild(lineElt);	
 	}
+	container.appendChild(board);
+	body.appendChild(container);
 };
+
+Renderer.prototype.getPositionClass = function(line, col){
+	return "position-"+ line + "-" + col;
+}
