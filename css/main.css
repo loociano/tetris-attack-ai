@@ -1,14 +1,24 @@
 body {
+	margin: 0;
+	padding: 0;
+	font-family: 'Nova Mono';
 	background: #ddd;
 }
 
+#heading {
+	margin: 0 auto;
+}
+
 .container {
-	width: 500px;
+	width: 24em;
 	margin: 0 auto;
 }
 
 div.board {
-	position: relative;
+	position: absolute;
+	background: #bbb;
+	border: 1.5em solid #eee;
+	border-radius: 1em;
 }
 
 div.line {
@@ -27,39 +37,50 @@ div.line {
 	width: 3em;
 	height: 3em;
 	text-align: center;
+	border-radius: 5px;
+}
+
+.empty {
+	border: 5px solid rgb(189, 189, 189);
+	background-color: #B8B8B8;
+	border-radius: 10px;
 }
 
 .block {
-	border: 1px solid #4c4c4c;
-	border-radius: 3px;
+	border: 5px solid #4c4c4c;
 	box-shadow: 2px 2px 5px #999;
 }
 
 .combo {
-	opacity: 0.4;
-	border-color: white;
+	opacity: 0.2;
 }
 
 .red {
-	background-color: red;
+	background-color: rgb(255, 42, 42);
+	border-color: rgb(191, 12, 12);
 }
 
 .yellow {
 	background-color: yellow;
+	border-color: rgb(236, 175, 28);
 }
 
 .blue {
-	background-color: blue;
+	background-color: rgb(51, 188, 241);
+	border-color: rgb(8, 101, 165);
 }
 
 .green {
-	background-color: green;
+	background-color: rgb(64, 192, 64);
+	border-color: rgb(24, 131, 30);
 }
 
 .silver {
 	background-color: #999;
+	border-color: rgb(97, 97, 97);
 }
 
 .purple {
-	background-color: purple;
+	background-color: rgb(230, 70, 230);
+	border-color: rgb(147, 52, 147);
 }

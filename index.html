@@ -8,11 +8,20 @@
 	<script type="text/javascript" src="js/Cursor.js"></script>
 	<script type="text/javascript" src="js/Renderer.js"></script>
 	<script type="text/javascript" src="js/Game.js"></script>
+	<!--<link rel="stylesheet" href="css/animate.min.css">-->
 	<link href="css/main.css" rel="stylesheet" type="text/css">
 </head>
 <body>
 	<script>
+		// Testing boards
+		var board = [
+			[new Block("blue"), new Block("blue"), null, null, null, new Block("blue")], 
+			[new Block("blue"), new Block("blue")],
+			[null, null, null, new Block("red")]
+		];
+		// new Game(board).start();
 		new Game().start();
 	</script>
+
 </body>
 </html>

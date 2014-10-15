@@ -7,12 +7,12 @@
  */
 
 /** Constructor */
-function Board(width, height){
+function Board(board, width, height){
 	(width == undefined) ? this.width = 6 : this.width = width;
 	(height == undefined) ? this.height = 10 : this.height = height;
 
 	this.board = [];
-	this.generate();
+	(board == undefined) ? this.generate() : this.board = board;
 }
 
 /** Returns board's height */

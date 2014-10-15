@@ -43,7 +43,10 @@ Renderer.prototype.renderBoard = function(){
 			var classNames = "square";
 			
 			if (col == 0) classNames += " first-line-block";
-			if (block != null) classNames += " block " + block.getType() + " " + block.getState();
+			if (block != null)
+				classNames += " block " + block.getType() + " " + block.getState();
+			else
+				classNames += " empty";
 			
 			blockElt.className = classNames;
 			lineElt.appendChild(blockElt);
