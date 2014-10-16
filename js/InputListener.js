@@ -4,13 +4,13 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
-function InputListener(game){
+function InputListener(game, cursor, renderer){
 
 	this.map = {
 		13: "hit", // Enter
 		17: "hit", // Left Ctrl
 		27: "back", // Scape
-		32: "hit", // Space bar
+		32: "swap", // Space bar
 		37: "left",
 		38: "up",
 		39: "right",
@@ -27,6 +27,8 @@ function InputListener(game){
 	};
 
 	this.game = game;
+	this.renderer = renderer;
+	this.cursor = cursor;
 	this.keyListen();
 }
 
@@ -35,32 +37,36 @@ InputListener.prototype.keyListen = function(){
 	
 	var parent = this;
 
-	window.onkeyup = function(e) {
+	window.onkeydown = function(e) {
 	   var key = e.keyCode ? e.keyCode : e.which;
 	   parent.act(key);
 	}
 };
 
-/** Dispatchs upon key */
+/** Dispatches upon key */
 InputListener.prototype.act = function(key){
 
    	var action = this.map[key];
 
 	switch(action){
 		case "up":
-			alert('up');
+			this.up();
 			break;
 
 		case "down":
-			alert('down');
+			this.down();
 			break;
 
 		case "left":
-			alert('left');
+			this.left();
 			break;
 
 		case "right":
-			alert('right');
+			this.right();
+			break;
+
+		case "swap":
+			this.swap();
 			break;
 
 		case "hit":
@@ -76,4 +82,35 @@ InputListener.prototype.act = function(key){
 /** Action on hit */
 InputListener.prototype.hit = function(){
 	this.game.restart();
+};
+
+/** Action on left */
+InputListener.prototype.left = function(){
+	this.cursor.left();
+	this.renderer.updateCursor();
+};
+
+/** Action on right */
+InputListener.prototype.right = function(){
+	this.cursor.right();
+	this.renderer.updateCursor();
+};
+
+/** Action on up */
+InputListener.prototype.up = function(){
+	this.cursor.up();
+	this.renderer.updateCursor();
+};
+
+/** Action on down */
+InputListener.prototype.down = function(){
+	this.cursor.down();
+	this.renderer.updateCursor();
+};
+
+/** Action on swap */
+InputListener.prototype.swap = function(){
+	this.cursor.swap();
+	var position = this.cursor.getPosition();
+	this.renderer.renderSwap(position.y, position.x);
 };

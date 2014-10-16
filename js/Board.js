@@ -138,6 +138,7 @@ Board.prototype.applyGravity = function(){
 	}
 };
 
+/** Fall all blocks on top, in cascade */
 Board.prototype.fallCascade = function(explodeLine, explodeCol){
 	for (var line = explodeLine; line < this.height; line++){
 		var block = this.board[line][explodeCol];

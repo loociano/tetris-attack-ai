@@ -14,15 +14,15 @@
  	this.id = null;
  }
 
-/** Start game */
+/** Starts a new game */
  Game.prototype.start = function(){
 
  	this.ai = new Ai(this.board);
  	this.cursor = new Cursor(this.board);
- 	this.renderer = new Renderer(this.board);
- 	this.input = new InputListener(this);
+ 	this.renderer = new Renderer(this.board, this.cursor);
+ 	this.input = new InputListener(this, this.cursor, this.renderer);
 
- 	this.renderer.renderBoard();
+ 	this.renderer.render();
 
  	var parent = this;
  	this.id = window.setInterval(function(){
@@ -32,7 +32,7 @@
  	}, 500);
  };
 
-/** Restart game */
+/** Restarts game */
  Game.prototype.restart = function(){
  	window.clearInterval(this.id);
  	this.board = new Board();
