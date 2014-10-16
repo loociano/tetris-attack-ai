@@ -48,7 +48,7 @@ div.line {
 	border: 0.35em solid rgb(189, 189, 189);
 	background-color: #B8B8B8;
 	border-radius: 10px;
-	transition: 0.5s ease-out;
+	transition: 0.05s linear;
 	z-index: 1;
 }
 

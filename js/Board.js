@@ -138,6 +138,16 @@ Board.prototype.applyGravity = function(){
 	}
 };
 
+Board.prototype.fallCascade = function(explodeLine, explodeCol){
+	for (var line = explodeLine; line < this.height; line++){
+		var block = this.board[line][explodeCol];
+		if (block != null){
+			if (!block.isExploding())
+				block.fall();
+		}
+	}
+};
+
 /** Searches combos */
 Board.prototype.searchCombos = function(){
 	this.searchHorizontalCombos();

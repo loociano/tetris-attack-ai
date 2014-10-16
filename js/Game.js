@@ -21,7 +21,7 @@
 
  	var parent = this;
  	window.setInterval(function(){
- 		parent.board.applyGravity();
+ 		//parent.board.applyGravity();
  		parent.board.searchCombos();
  		parent.renderer.refresh();
  		parent.board.explodeCombos();

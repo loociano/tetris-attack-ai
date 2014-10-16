@@ -32,6 +32,7 @@ Renderer.prototype.refresh = function(){
 					var position = "position-"+line+"-"+col;
 					var blockElt = document.getElementsByClassName(position)[0];
 					blockElt.className = "tile "+ position + " empty";
+					this.board.fallCascade(line, col);
 					this.board.setBlock(null, line, col);
 				}
 				if (block.isFalling()){
