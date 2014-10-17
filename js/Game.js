@@ -27,6 +27,7 @@
 
  	var parent = this;
  	this.id = window.setInterval(function(){
+ 		parent.board.applyGravity();
  		parent.board.searchCombos();
  		parent.renderer.refresh();
  		parent.board.explodeCombos();

@@ -20,6 +20,11 @@ function Renderer(board, cursor){
 	this.cursorElt = document.createElement("div");
 	this.cursorElt.id = "cursor";
 	this.position = null;
+
+	this.leftFinished = false;
+	this.rightFinished = false;
+	this.moveCol = null;
+	this.moveLine = null;
 }
 
 /** Renders all elements of the game */
@@ -31,6 +36,9 @@ Renderer.prototype.render = function(){
 
 /** Refreshes */
 Renderer.prototype.refresh = function(){
+
+	var blockLeft = null;
+	var blockRight = null;
 
 	for (var line = 0; line < this.board.getHeight(); line++){
 		for (var col = 0; col < this.board.getWidth(); col++){	
@@ -76,38 +84,63 @@ Renderer.prototype.refresh = function(){
 
 				// Handle right moves
 				if (block.isMovingRight()){
+					
+					blockRight = block;
+					this.moveLine = line;
+					this.moveCol = col;
+
+					// Handle Shifting Right: because there is no block on the right side
+					if (this.board.getBlock(line, col+1) == null){
+						this.leftFinished = true;
+					}
+
+					// Move right
 					var position = this.getPositionClass(line, col);
 					var newPosition = this.getPositionClass(line, col+1);
-					var blockElt = this.getBlockElement(position);
-					console.log(blockElt);
+					var blockElt = this.getMovingRightElement(position);
+					
 					blockElt.classList.remove(position);
 					blockElt.classList.remove("none");
 					blockElt.classList.add("right");
 					blockElt.classList.add(newPosition);
-					//blockElt.addEventListener('webkitTransitionEnd', this.afterRightMove(block, line, col), false);
-				} else if (block.isMovingLeft()) {
+					blockElt.addEventListener('webkitTransitionEnd', this.afterRightMove(blockElt), false);
 
-					// Handle left moves
-					var leftBlock = this.board.getBlock(line, col-1);
+				} 
+				if (block.isMovingLeft()) {
 					
+					blockLeft = block;
+					this.moveLine = line;
+					this.moveCol = col-1;
+
+					// Handle Shifting Left: because there is no block on the left side
+					if (this.board.getBlock(line, col-1) == null){
+						this.rightFinished = true;
+					}
+
+					// Move left					
 					var position = this.getPositionClass(line, col);
 					var newPosition = this.getPositionClass(line, col-1);
-					
-					var blockElt = this.getNoneElement(position);
+					var blockElt = this.getMovingLeftElement(position);
 
 					blockElt.classList.remove(position);
 					blockElt.classList.remove("none");
 					blockElt.classList.add("left");
 					blockElt.classList.add(newPosition);
 
-					blockElt.addEventListener('webkitTransitionEnd', this.afterLeftMove(leftBlock, block, line, col-1), false);
+					blockElt.addEventListener('webkitTransitionEnd', this.afterLeftMove(blockElt), false);
+				}
+
+				// Check if any swap has finished
+				if (this.leftFinished && this.rightFinished){
+					this.updateBoardAfterMove(blockLeft, blockRight, line, col);
 				}
 			}
 		}
 	}
 };
 
-Renderer.prototype.getBlockElement = function(position){
+/** Returns the block DOM element which is moving right, given a position CSS class */ 
+Renderer.prototype.getMovingRightElement = function(position){
 	var blockElts = document.getElementsByClassName(position);
 	for (var i = 0; i < blockElts.length; i++){
 		var blockElt = blockElts[i];
@@ -117,43 +150,53 @@ Renderer.prototype.getBlockElement = function(position){
 	}
 };
 
-Renderer.prototype.getNoneElement = function(position){
+/** Returns the block DOM element which is moving left, given a position css class */
+Renderer.prototype.getMovingLeftElement = function(position){
+
+	var result = null;
 	var blockElts = document.getElementsByClassName(position);
+
 	for (var i = 0; i < blockElts.length; i++){
 		var blockElt = blockElts[i];
-		if (blockElt.classList.contains("none")){
-			return blockElt;
+		if (blockElt.classList.contains("right")){
+			blockElt.classList.remove("right");
+			blockElt.classList.add("none");
+		} else {
+			if (blockElt.id != "cursor"){
+				result = blockElt;
+			}
 		}
 	}
+	return result;
 };
 
-Renderer.prototype.getNoneElement = function(position){
-	var blockElts = document.getElementsByClassName(position);
-	for (var i = 0; i < blockElts.length; i++){
-		var blockElt = blockElts[i];
-		if (blockElt.classList.contains("none")){
-			return blockElt;
-		}
-	}
+/** Updates board after swap finishes */ 
+Renderer.prototype.updateBoardAfterMove = function(blockLeft, blockRight){
+
+	if (blockLeft != null) blockLeft.setNone();
+	if (blockRight != null) blockRight.setNone();
+
+	this.board.swap(this.moveLine, this.moveCol);
+
+	this.moveLine = null;
+	this.moveCol = null;
+	this.leftFinished = false;
+	this.rightFinished = false;
 };
 
 /** Callback after left move finishes */
-Renderer.prototype.afterLeftMove = function(leftBlock, rightBlock, line, col){
-	debugger
-
-	leftBlock.setNone();
- 	rightBlock.setNone();
-
-	this.board.setBlock(leftBlock, line, col+1);
-	this.board.setBlock(rightBlock, line, col);
- 	//this.board.setBlock(null, line, col);
+Renderer.prototype.afterLeftMove = function(blockElt){
+	// Update classes
+	blockElt.classList.remove("left");
+	blockElt.classList.add("none");
+	this.leftFinished = true;
 };
 
 /** Callback after left move finishes */
-Renderer.prototype.afterRightMove = function(block, line, col){
-	//this.board.setBlock(null, line, col);
- 	this.board.setBlock(block, line, col+1);
- 	block.setNone();
+Renderer.prototype.afterRightMove = function(blockElt){
+	
+	// Do no remove the "right" class yet, wait the left movement to finish.
+	this.rightFinished = true;
 };
 
 /** Callback after fall finishes */

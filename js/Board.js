@@ -35,6 +35,16 @@ Board.prototype.setBlock = function(block, line, col){
 	this.board[line][col] = block;
 };
 
+/** Swaps two blocks given a line and column */
+Board.prototype.swap = function(line, col){
+
+	var leftBlock = this.board[line][col];
+	var rightBlock = this.board[line][col+1];
+
+	this.board[line][col] = rightBlock;
+	this.board[line][col+1] = leftBlock;
+}
+
 /** Returns true if a line contains a given block type */
 Board.prototype.hasBlockInLine = function(type, line){
 	for (var col = 0; col < this.width; col++){
@@ -121,8 +131,6 @@ Board.prototype.applyGravity = function(){
 			if (block != null){
 				if (!this.isBlockUnderneath(line, col)){
 					block.fall();
-					//this.board[line][col] = null;
-					//this.board[this.nextAvailableLine(line,col)][col] = block;
 				}
 			}
 		}
