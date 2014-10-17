@@ -9,7 +9,7 @@
 var types = ["blue", "yellow", "red", "purple", "green", "silver", "blue"];
 
 /** Block States */
-var states = ["none", "left", "right", "fall", "combo", "explode"];
+var states = ["none", "left", "right", "floating", "fall", "combo", "explode"];
 
 /** Constructor */
 function Block(type){
@@ -58,6 +58,16 @@ Block.prototype.fall = function(){
 /** Set state as none */
 Block.prototype.isFalling = function(){
 	return this.state == "fall";
+};
+
+/** Set state as fall */
+Block.prototype.hover = function(){
+	return this.state = "hover";
+};
+
+/** Set state as none */
+Block.prototype.isHovering = function(){
+	return this.state == "hover";
 };
 
 /** Set state as explode */

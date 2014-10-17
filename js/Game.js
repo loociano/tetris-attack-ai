@@ -14,7 +14,6 @@ var states = ["ready", "swap"];
  		this.board = new Board(board, board[0].length, board.length);
 
  	this.id = null;
- 	this.cursor = new Cursor(this.board);
  }
 
  Game.prototype.isSwap = function(){
@@ -41,7 +40,7 @@ var states = ["ready", "swap"];
  	this.state = "ready";
 
  	this.ai = new Ai(this.board);
- 	
+ 	this.cursor = new Cursor(this.board);
  	this.renderer = new Renderer(this, this.board, this.cursor);
  	this.input = new InputListener(this, this.cursor, this.renderer);
 

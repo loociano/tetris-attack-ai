@@ -70,6 +70,10 @@ Renderer.prototype.refresh = function(){
 					case "left":
 						this.renderLeft(block, line, col);
 						break;
+
+					case "hover":
+						this.renderHover(block, line, col);
+						break;
 				}
 
 				// Check if any swap has finished
@@ -79,6 +83,27 @@ Renderer.prototype.refresh = function(){
 			}
 		}
 	}
+};
+
+/** Renders combo */
+Renderer.prototype.renderHover = function(block, line, col){
+
+	if (block.isHovering()){
+
+		var position = this.getPositionClass(line, col);
+		var blockElt = document.getElementsByClassName(position)[0];
+
+		if (!blockElt.classList.contains("hover")){
+			this.switchClass(blockElt, "none", "hover");
+			this.afterHover(block, blockElt);
+		}
+	}
+};
+
+/** Action after hover */
+Renderer.prototype.afterHover = function(block, blockElt){
+	block.setNone();
+	this.switchClass(blockElt, "hover", "none");
 };
 
 /** Renders combo */
@@ -146,8 +171,6 @@ Renderer.prototype.renderRight = function(block, line, col){
 		var blockElt = this.getMovingRightElement(position);
 
 		if (!blockElt.classList.contains("right")){
-
-			blockElt.id = "right";
 			
 			this.blockSwapRight = block;
 			this.moveLine = line;
@@ -239,11 +262,21 @@ Renderer.prototype.getMovingLeftElement = function(position){
 /** Updates board after swap finishes */ 
 Renderer.prototype.updateBoardAfterSwap = function(){
 
-	if (this.swapLeftElt != null)
-		this.switchClass(this.swapLeftElt, "left", "none");
+	if (this.swapLeftElt != null){
+		if (this.board.isBlockUnderneath(this.moveLine, this.moveCol)){
+			this.switchClass(this.swapLeftElt, "left", "none");
+		} else {
+			this.switchClass(this.swapLeftElt, "left", "hover");
+		}
+	}
 	
-	if (this.swapRightElt != null)
-		this.switchClass(this.swapRightElt, "right", "none");
+	if (this.swapRightElt != null){
+		if (this.board.isBlockUnderneath(this.moveLine, this.moveCol+1)){
+			this.switchClass(this.swapRightElt, "right", "none");
+		} else {
+			this.switchClass(this.swapRightElt, "right", "hover");
+		}
+	}
 
 	this.board.swap(this.moveLine, this.moveCol);
 

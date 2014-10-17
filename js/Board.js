@@ -38,15 +38,29 @@ Board.prototype.setBlock = function(block, line, col){
 /** Swaps two blocks given a line and column */
 Board.prototype.swap = function(line, col){
 
+	var nextCol = col+1;
 	var leftBlock = this.board[line][col];
-	var rightBlock = this.board[line][col+1];
+	var rightBlock = this.board[line][nextCol];
 
-	if (leftBlock != null) leftBlock.setNone();
-	if (rightBlock != null) rightBlock.setNone();
+	if (leftBlock != null) {
+		if (this.isBlockUnderneath(line, nextCol)) {
+			leftBlock.setNone();	
+		} else {
+			leftBlock.hover();	
+		}
+	}
+
+	if (rightBlock != null) {
+		if (this.isBlockUnderneath(line, col)) {
+			rightBlock.setNone();
+		} else {
+			rightBlock.hover();
+		}
+	}
 
 	this.board[line][col] = rightBlock;
 	this.board[line][col+1] = leftBlock;
-}
+};
 
 /** Returns true if a line contains a given block type */
 Board.prototype.hasBlockInLine = function(type, line){
@@ -132,7 +146,7 @@ Board.prototype.applyGravity = function(){
 		for (var col = 0; col < this.width; col++){
 			var block = this.board[line][col];
 			if (block != null){
-				if (!this.isBlockUnderneath(line, col)){
+				if (!this.isBlockUnderneath(line, col) && !block.isHovering()){
 					block.fall();
 				}
 			}
@@ -252,8 +266,7 @@ Board.prototype.generate = function(){
 				var block = this.generateBlock(line);
 				if (block != null){
 					this.board[line][col] = block;
-					// Uncomment to avoid combos on game load
-					// this.setCorrectType(line, col);
+					this.setCorrectType(line, col);
 				}
 			}
 		}
