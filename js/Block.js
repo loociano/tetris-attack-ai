@@ -31,18 +31,23 @@ Block.prototype.setState = function(state){
 };
 
 /** Set state as combo */
-Block.prototype.setStateCombo = function(){
-	return this.state = "combo";
+Block.prototype.combo = function(){
+	this.state = "combo";
 };
 
 /** Returns true if state is combo */
-Block.prototype.isStateCombo = function(){
+Block.prototype.isCombo = function(){
 	return this.state == "combo";
 };
 
 /** Set state as none */
 Block.prototype.setNone = function(){
 	this.state = "none";
+};
+
+/** Set state as none */
+Block.prototype.isNone = function(){
+	return this.state == "none";
 };
 
 /** Set state as fall */

@@ -8,7 +8,7 @@ function InputListener(game, cursor, renderer){
 
 	this.map = {
 		13: "hit", // Enter
-		17: "hit", // Left Ctrl
+		17: "swap", // Left Ctrl
 		27: "back", // Scape
 		32: "swap", // Space bar
 		37: "left",
@@ -110,5 +110,11 @@ InputListener.prototype.down = function(){
 
 /** Action on swap */
 InputListener.prototype.swap = function(){
-	this.cursor.swap();
+	if (!this.game.isSwap()){
+		if (this.cursor.swap()){
+			this.game.swap();
+		} else {
+			this.game.ready();
+		}
+	}
 };

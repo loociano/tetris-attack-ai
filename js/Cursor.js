@@ -42,9 +42,23 @@
 
 /** Swap blocks horizontally */
  Cursor.prototype.swap = function(){
+ 	
+ 	var isSwapping = false;
+ 	
  	var leftBlock = this.board.getBlock(this.y, this.x);
- 	if (leftBlock != null) leftBlock.right();
+ 	if (leftBlock != null) {
+ 		if (leftBlock.isNone()){
+ 			leftBlock.right();
+ 			isSwapping = true;
+ 		}
+ 	}
 
  	var rightBlock = this.board.getBlock(this.y, this.x+1);
- 	if (rightBlock != null) rightBlock.left();
+ 	if (rightBlock != null){
+ 		if (rightBlock.isNone()){
+ 			rightBlock.left();	
+ 			isSwapping = true;
+ 		}
+ 	}
+ 	return isSwapping;
  };

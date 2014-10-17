@@ -41,6 +41,9 @@ Board.prototype.swap = function(line, col){
 	var leftBlock = this.board[line][col];
 	var rightBlock = this.board[line][col+1];
 
+	if (leftBlock != null) leftBlock.setNone();
+	if (rightBlock != null) rightBlock.setNone();
+
 	this.board[line][col] = rightBlock;
 	this.board[line][col+1] = leftBlock;
 }
@@ -115,7 +118,7 @@ Board.prototype.explodeCombos = function(){
 		for (var col = 0; col < this.width; col++){
 			var block = this.board[line][col];
 			if (block != null){
-				if (block.isStateCombo()) {
+				if (block.isCombo()) {
 					block.explode();
 				}
 			}
@@ -180,7 +183,7 @@ Board.prototype.searchHorizontalCombos = function(){
 							offset = 1;
 						}
 					}
-					this.board[line][col-count+offset].setStateCombo();
+					this.board[line][col-count+offset].combo();
 					count--;
 				}
 			}
@@ -216,7 +219,7 @@ Board.prototype.searchVerticalCombos = function(){
 							offset = 1;
 						}
 					}
-					this.board[line-count+offset][col].setStateCombo();
+					this.board[line-count+offset][col].combo();
 					count--;
 				}
 			}
@@ -224,54 +227,6 @@ Board.prototype.searchVerticalCombos = function(){
 			previousBlock = block;
 		}
 	}
-};
-
-/** Returns true if the contiguous block is equal given a direction
-	Direction can be up, down, left, right */
-Board.prototype.isNextBlockEqual = function(line, col, direction){
-
-	var isEqual = false;
-	var block = this.board[line][col];
-
-	switch(direction){
-
-		case "up":
-			if (line < this.height - 1){
-				var upperBlock = this.board[line+1][col];
-				if (upperBlock != null){
-					isEqual = block.compareType(upperBlock);
-				}
-			}
-			break;
-
-		case "down":
-			if (line > 0){
-				var lowerBlock = this.board[line-1][col];
-				if (lowerBlock != null){
-					isEqual = block.compareType(lowerBlock);
-				}
-			}
-			break;
-
-		case "left":
-			if (col > 0){
-				var leftBlock = this.board[line][col-1];
-				if (leftBlock != null){
-					isEqual = block.compareType(leftBlock);
-				}
-			}
-			break;
-
-		case "right":
-			if (col < this.width - 1){
-				var rightBlock = this.board[line][col+1];
-				if (rightBlock != null){
-					isEqual = block.compareType(rightBlock);
-				}
-			}
-			break;
-	}
-	return isEqual;
 };
 
 /** Generate empty board */
@@ -297,7 +252,8 @@ Board.prototype.generate = function(){
 				var block = this.generateBlock(line);
 				if (block != null){
 					this.board[line][col] = block;
-					//this.setCorrectType(line, col);
+					// Uncomment to avoid combos on game load
+					// this.setCorrectType(line, col);
 				}
 			}
 		}
@@ -339,7 +295,6 @@ Board.prototype.isComboLeft = function(line, col){
 		if (leftBlock.compareType(block)){
 			count++;
 			if (count > 2){
-				console.log("left combo on " + line + " " + col);
 				return true;
 			} else {
 				continue;
@@ -364,7 +319,6 @@ Board.prototype.isComboDown = function(line, col){
 		if (lowerBlock.compareType(block)){
 			count++;
 			if (count > 2){
-				console.log("down combo on " + line + " " + col);
 				return true;
 			} else {
 				continue;

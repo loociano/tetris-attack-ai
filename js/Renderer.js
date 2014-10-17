@@ -5,7 +5,8 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
-function Renderer(board, cursor){
+function Renderer(game, board, cursor){
+	this.game = game;
 	this.board = board;
 	this.cursor = cursor;
 
@@ -25,6 +26,12 @@ function Renderer(board, cursor){
 	this.rightFinished = false;
 	this.moveCol = null;
 	this.moveLine = null;
+
+	this.blockSwapLeft = null;
+	this.blockSwapRight = null;
+
+	this.swapRightElt = null;
+	this.swapLeftElt = null;
 }
 
 /** Renders all elements of the game */
@@ -37,117 +44,177 @@ Renderer.prototype.render = function(){
 /** Refreshes */
 Renderer.prototype.refresh = function(){
 
-	var blockLeft = null;
-	var blockRight = null;
-
 	for (var line = 0; line < this.board.getHeight(); line++){
 		for (var col = 0; col < this.board.getWidth(); col++){	
 			var block = this.board.getBlock(line, col);
 			
 			if (block != null){
 
-				//console.log(block.getState() + " " + line + " " + col);
-				
-				// Handle combos
-				if (block.isStateCombo()){
-					var position = this.getPositionClass(line, col);
-					var blockElt = document.getElementsByClassName(position)[0];
-					blockElt.className = blockElt.className.replace( /(?:^|\s)none(?!\S)/g , ' combo');
-				}
+				switch(block.getState()){
 
-				// Handle explosions
-				if (block.isExploding()){
-					var position = this.getPositionClass(line, col);
-					var blockElt = document.getElementsByClassName(position)[0];
-					
-					blockElt.className = "tile "+ position + " empty";
-					this.board.fallCascade(line, col);
-					this.board.setBlock(null, line, col);
+					case "combo":
+						this.renderCombo(block, line, col);
+						break;
 
-					// When animation finishes, delete element from DOM
-					blockElt.addEventListener('webkitTransitionEnd', blockElt.remove(), false);
-				}
+					case "explode":
+						this.renderExplode(block, line, col);
+						break;
 
-				// Handle falls
-				if (block.isFalling()){
-					var position = this.getPositionClass(line, col);
-					var blockElt = document.getElementsByClassName(position)[0];
-					var newLine = this.board.nextAvailableLine(line, col);
-					var newPosition = this.getPositionClass(newLine, col);
-					
-					blockElt.classList.remove(position);
-					blockElt.classList.add('fall');
-					blockElt.classList.add(newPosition);
-					
-					blockElt.addEventListener('webkitTransitionEnd', this.afterFall(blockElt, block, line, newLine, col), false);
-				}
+					case "fall":
+						this.renderFall(block, line, col);
 
-				// Handle right moves
-				if (block.isMovingRight()){
-					
-					blockRight = block;
-					this.moveLine = line;
-					this.moveCol = col;
+					case "right":
+						this.renderRight(block, line, col);
+						break;
 
-					// Handle Shifting Right: because there is no block on the right side
-					if (this.board.getBlock(line, col+1) == null){
-						this.leftFinished = true;
-					}
-
-					// Move right
-					var position = this.getPositionClass(line, col);
-					var newPosition = this.getPositionClass(line, col+1);
-					var blockElt = this.getMovingRightElement(position);
-					
-					blockElt.classList.remove(position);
-					blockElt.classList.remove("none");
-					blockElt.classList.add("right");
-					blockElt.classList.add(newPosition);
-					blockElt.addEventListener('webkitTransitionEnd', this.afterRightMove(blockElt), false);
-
-				} 
-				if (block.isMovingLeft()) {
-					
-					blockLeft = block;
-					this.moveLine = line;
-					this.moveCol = col-1;
-
-					// Handle Shifting Left: because there is no block on the left side
-					if (this.board.getBlock(line, col-1) == null){
-						this.rightFinished = true;
-					}
-
-					// Move left					
-					var position = this.getPositionClass(line, col);
-					var newPosition = this.getPositionClass(line, col-1);
-					var blockElt = this.getMovingLeftElement(position);
-
-					blockElt.classList.remove(position);
-					blockElt.classList.remove("none");
-					blockElt.classList.add("left");
-					blockElt.classList.add(newPosition);
-
-					blockElt.addEventListener('webkitTransitionEnd', this.afterLeftMove(blockElt), false);
+					case "left":
+						this.renderLeft(block, line, col);
+						break;
 				}
 
 				// Check if any swap has finished
 				if (this.leftFinished && this.rightFinished){
-					this.updateBoardAfterMove(blockLeft, blockRight, line, col);
+					this.updateBoardAfterSwap(line, col);
 				}
 			}
 		}
 	}
 };
 
+/** Renders combo */
+Renderer.prototype.renderCombo = function(block, line, col){
+
+	if (block.isCombo()){
+
+		var position = this.getPositionClass(line, col);
+		var blockElt = document.getElementsByClassName(position)[0];
+
+		if (!blockElt.classList.contains("combo")){
+			this.switchClass(blockElt, "none", "combo");
+			
+			// Callback when animation finishes
+			blockElt.addEventListener('webkitTransitionEnd', this.afterCombo(), false);
+		}
+	}
+};
+
+/** Renders explode */
+Renderer.prototype.renderExplode = function(block, line, col){
+
+	if (block.isExploding()){
+
+		var position = this.getPositionClass(line, col);
+		var blockElt = document.getElementsByClassName(position)[0];
+
+		if (!blockElt.classList.contains("explode")){
+
+			this.switchClass(blockElt, "combo", "explode");
+			//blockElt.className = "tile "+ position + " empty";
+
+			// When animation finishes, delete element from DOM
+			blockElt.addEventListener('webkitTransitionEnd', this.afterExplode(blockElt, line, col), false);
+		}
+	}
+};
+
+/** Renders fall */
+Renderer.prototype.renderFall = function(block, line, col){
+
+	if (block.isFalling()){
+
+		var position = this.getPositionClass(line, col);
+		var blockElt = document.getElementsByClassName(position)[0];
+
+		if (!blockElt.classList.contains("fall")){
+			
+			var newLine = this.board.nextAvailableLine(line, col);
+			var newPosition = this.getPositionClass(newLine, col);
+
+			this.switchClass(blockElt, "none", "fall");
+			this.switchClass(blockElt, position, newPosition);
+			blockElt.addEventListener('webkitTransitionEnd', this.afterFall(blockElt, block, line, newLine, col), false);
+		}
+	}
+};
+
+/** Renders right */
+Renderer.prototype.renderRight = function(block, line, col){
+
+	if (block.isMovingRight()){
+
+		var position = this.getPositionClass(line, col);
+		var blockElt = this.getMovingRightElement(position);
+
+		if (!blockElt.classList.contains("right")){
+
+			blockElt.id = "right";
+			
+			this.blockSwapRight = block;
+			this.moveLine = line;
+			this.moveCol = col;
+
+			// Handle Shifting Right: because there is no block on the right side
+			if (this.board.getBlock(line, col+1) == null){
+				this.leftFinished = true;
+			}
+
+			var newPosition = this.getPositionClass(line, col+1);
+
+			this.switchClass(blockElt, "none", "right");
+			this.switchClass(blockElt, position, newPosition);
+			blockElt.addEventListener('webkitTransitionEnd', this.afterRightMove(blockElt), false);
+		}	
+	} 
+};
+
+/** Renders left */
+Renderer.prototype.renderLeft = function(block, line, col){
+	
+	if (block.isMovingLeft()) {
+
+		this.blockSwapLeft = block;
+		this.moveLine = line;
+		this.moveCol = col-1;
+
+		// Handle Shifting Left: because there is no block on the left side
+		if (this.board.getBlock(line, col-1) == null){
+			this.rightFinished = true;
+		}
+
+		// Move left					
+		var position = this.getPositionClass(line, col);
+		var newPosition = this.getPositionClass(line, col-1);
+		var blockElt = this.getMovingLeftElement(position);
+
+		this.switchClass(blockElt, "none", "left");
+		this.switchClass(blockElt, position, newPosition);
+
+		blockElt.addEventListener('webkitTransitionEnd', this.afterLeftMove(blockElt), false);
+	}
+};
+
+/** Switches css class */
+Renderer.prototype.switchClass = function(elt, oldClass, newClass){
+	elt.classList.remove(oldClass);
+	elt.classList.add(newClass);
+};
+
 /** Returns the block DOM element which is moving right, given a position CSS class */ 
 Renderer.prototype.getMovingRightElement = function(position){
+	
+	var result = null;
 	var blockElts = document.getElementsByClassName(position);
 	for (var i = 0; i < blockElts.length; i++){
 		var blockElt = blockElts[i];
 		if (blockElt.id != "cursor"){
-			return blockElt;
+			result = blockElt;
 		}
 	}
+	this.swapRightElt = result;
+	if (result == null){
+		debugger
+	}
+	return result;
 };
 
 /** Returns the block DOM element which is moving left, given a position css class */
@@ -158,37 +225,41 @@ Renderer.prototype.getMovingLeftElement = function(position){
 
 	for (var i = 0; i < blockElts.length; i++){
 		var blockElt = blockElts[i];
-		if (blockElt.classList.contains("right")){
-			blockElt.classList.remove("right");
-			blockElt.classList.add("none");
-		} else {
-			if (blockElt.id != "cursor"){
-				result = blockElt;
-			}
+		if (!blockElt.classList.contains("right")){
+			result = blockElt;
 		}
 	}
+	if (result == null){
+		debugger
+	}
+	this.swapLeftElt = result;
 	return result;
 };
 
 /** Updates board after swap finishes */ 
-Renderer.prototype.updateBoardAfterMove = function(blockLeft, blockRight){
+Renderer.prototype.updateBoardAfterSwap = function(){
 
-	if (blockLeft != null) blockLeft.setNone();
-	if (blockRight != null) blockRight.setNone();
+	if (this.swapLeftElt != null)
+		this.switchClass(this.swapLeftElt, "left", "none");
+	
+	if (this.swapRightElt != null)
+		this.switchClass(this.swapRightElt, "right", "none");
 
 	this.board.swap(this.moveLine, this.moveCol);
 
+	this.game.ready();
+
+	// Reset swap variables
 	this.moveLine = null;
 	this.moveCol = null;
 	this.leftFinished = false;
 	this.rightFinished = false;
+	this.swapLeftElt = null;
+	this.swapRightElt = null;
 };
 
 /** Callback after left move finishes */
 Renderer.prototype.afterLeftMove = function(blockElt){
-	// Update classes
-	blockElt.classList.remove("left");
-	blockElt.classList.add("none");
 	this.leftFinished = true;
 };
 
@@ -206,6 +277,18 @@ Renderer.prototype.afterFall = function(blockElt, block, line, newLine, col){
 	blockElt.classList.remove('fall');
 	blockElt.classList.add('none');
 	block.setNone();
+};
+
+/** Callback after combo finishes */
+Renderer.prototype.afterCombo = function(){
+	this.board.explodeCombos();
+};
+
+/** Callback after explosion finishes */
+Renderer.prototype.afterExplode = function(blockElt, line, col){
+	blockElt.remove();
+	this.board.fallCascade(line, col);
+	this.board.setBlock(null, line, col);
 };
 
 /** Renders a swap */
