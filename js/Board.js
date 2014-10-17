@@ -35,15 +35,6 @@ Board.prototype.setBlock = function(block, line, col){
 	this.board[line][col] = block;
 };
 
-Board.prototype.setAllBlocksNone = function(){
-	for (var line = 0; line < this.height; line++){
-		for (var col = 0; col < this.width; col++){
-			var block = this.board[line][col];
-			if (block != null) block.setState("none");
-		}
-	}
-};
-
 /** Returns true if a line contains a given block type */
 Board.prototype.hasBlockInLine = function(type, line){
 	for (var col = 0; col < this.width; col++){
@@ -396,6 +387,13 @@ Board.prototype.generateBlock = function(line){
 Board.prototype.isBlockUnderneath = function(line, col){
 	if (line == 0) return true;
 	return this.board[(line-1)][col] != null;
+};
+
+Board.prototype.isLeftEmpty = function(line, col){
+	if (line == 0 || this.board[(line-1)][col] == null) 
+		return true;
+	else
+		return false;
 };
 
 /** Returns the next available position (line) underneath 

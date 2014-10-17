@@ -111,6 +111,4 @@ InputListener.prototype.down = function(){
 /** Action on swap */
 InputListener.prototype.swap = function(){
 	this.cursor.swap();
-	var position = this.cursor.getPosition();
-	this.renderer.renderSwap(position.y, position.x);
 };

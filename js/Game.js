@@ -12,13 +12,14 @@
  		this.board = new Board(board, board[0].length, board.length);
 
  	this.id = null;
+ 	this.cursor = new Cursor(this.board);
  }
 
 /** Starts a new game */
  Game.prototype.start = function(){
 
  	this.ai = new Ai(this.board);
- 	this.cursor = new Cursor(this.board);
+ 	
  	this.renderer = new Renderer(this.board, this.cursor);
  	this.input = new InputListener(this, this.cursor, this.renderer);
 

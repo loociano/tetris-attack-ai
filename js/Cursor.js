@@ -42,9 +42,9 @@
 
 /** Swap blocks horizontally */
  Cursor.prototype.swap = function(){
- 	var leftBlock = this.board.getBlock(this.x, this.y);
- 	var rightBlock = this.board.getBlock(this.x+1, this.y);
+ 	var leftBlock = this.board.getBlock(this.y, this.x);
+ 	if (leftBlock != null) leftBlock.right();
 
- 	this.board.setBlock(rightBlock, this.x, this.y);
- 	this.board.setBlock(leftBlock, this.x+1, this.y);
+ 	var rightBlock = this.board.getBlock(this.y, this.x+1);
+ 	if (rightBlock != null) rightBlock.left();
  };

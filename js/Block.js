@@ -41,8 +41,8 @@ Block.prototype.isStateCombo = function(){
 };
 
 /** Set state as none */
-Block.prototype.setStateNone = function(){
-	return this.state = "none";
+Block.prototype.setNone = function(){
+	this.state = "none";
 };
 
 /** Set state as fall */
@@ -60,9 +60,29 @@ Block.prototype.explode = function(){
 	this.state = "explode";
 };
 
-/** Set state as none */
+/** Returns true if block is exploding */
 Block.prototype.isExploding = function(){
 	return this.state == "explode";
+};
+
+/** Moving left */
+Block.prototype.left = function(){
+	this.state = "left";
+};
+
+/** Moving right */
+Block.prototype.right = function(){
+	this.state = "right";
+};
+
+/** Returns true if block is moving left */
+Block.prototype.isMovingLeft = function(){
+	return this.state == "left";
+};
+
+/** Returns true if block is moving right */
+Block.prototype.isMovingRight = function(){
+	return this.state == "right";
 };
 
 /** Returns true if the type is valid */
@@ -102,11 +122,6 @@ Block.prototype.setDistinctRandomType = function(forbiddenTypes){
 /** Returns type */
 Block.prototype.getType = function(){
 	return this.type;
-};
-
-/** To String */
-Block.prototype.toString = function(){
-	return "[" + this.type.charAt(0).toUpperCase() + "]";
 };
 
 /** Compare type */
