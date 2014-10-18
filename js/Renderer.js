@@ -5,6 +5,9 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
+
+var hoverTimeMillis = 200; 
+
 function Renderer(game, board, cursor){
 	this.game = game;
 	this.board = board;
@@ -32,6 +35,8 @@ function Renderer(game, board, cursor){
 
 	this.swapRightElt = null;
 	this.swapLeftElt = null;
+
+	this.hoverTimeoutSet = false;
 }
 
 /** Renders all elements of the game */
@@ -62,6 +67,7 @@ Renderer.prototype.refresh = function(){
 
 					case "fall":
 						this.renderFall(block, line, col);
+						break;
 
 					case "right":
 						this.renderRight(block, line, col);
@@ -78,8 +84,23 @@ Renderer.prototype.refresh = function(){
 
 				// Check if any swap has finished
 				if (this.leftFinished && this.rightFinished){
-					this.updateBoardAfterSwap(line, col);
+					this.afterSwap(line, col);
 				}
+
+				// Check hover
+				if (this.board.isHovering()){
+
+					var parent = this;
+
+					if (!this.hoverTimeoutSet){
+	 					window.setTimeout(function(){
+	 						var pos = parent.board.getHoveringPos();
+	 						parent.afterHover(pos.y, pos.x);
+	 						parent.hoverTimeoutSet = false;
+	 					}, hoverTimeMillis);
+	 					this.hoverTimeoutSet = true;
+ 					}
+ 				}
 			}
 		}
 	}
@@ -88,132 +109,123 @@ Renderer.prototype.refresh = function(){
 /** Renders combo */
 Renderer.prototype.renderHover = function(block, line, col){
 
-	if (block.isHovering()){
+	var position = this.getPositionClass(line, col);
+	var blockElt = document.getElementsByClassName(position)[0];
 
-		var position = this.getPositionClass(line, col);
-		var blockElt = document.getElementsByClassName(position)[0];
-
-		if (!blockElt.classList.contains("hover")){
-			this.switchClass(blockElt, "none", "hover");
-			this.afterHover(block, blockElt);
-		}
+	if (!blockElt.classList.contains("hover")){
+		this.switchClass(blockElt, "none", "hover");
 	}
 };
 
 /** Action after hover */
-Renderer.prototype.afterHover = function(block, blockElt){
-	block.setNone();
+Renderer.prototype.afterHover = function(line, col){
+
+	var position = this.getPositionClass(line, col);
+	var blockElt = document.getElementsByClassName(position)[0];
+
 	this.switchClass(blockElt, "hover", "none");
+
+	this.board.stopHover();
+	if (this.game.isHover()){
+		this.game.ready();
+	} else {
+		debugger
+	}
 };
 
 /** Renders combo */
 Renderer.prototype.renderCombo = function(block, line, col){
 
-	if (block.isCombo()){
+	var position = this.getPositionClass(line, col);
+	var blockElt = document.getElementsByClassName(position)[0];
 
-		var position = this.getPositionClass(line, col);
-		var blockElt = document.getElementsByClassName(position)[0];
-
-		if (!blockElt.classList.contains("combo")){
-			this.switchClass(blockElt, "none", "combo");
-			
-			// Callback when animation finishes
-			blockElt.addEventListener('webkitTransitionEnd', this.afterCombo(), false);
-		}
+	if (!blockElt.classList.contains("combo")){
+		this.switchClass(blockElt, "none", "combo");
+		
+		// Callback when animation finishes
+		blockElt.addEventListener('webkitTransitionEnd', this.afterCombo(), false);
 	}
 };
 
 /** Renders explode */
 Renderer.prototype.renderExplode = function(block, line, col){
 
-	if (block.isExploding()){
+	var position = this.getPositionClass(line, col);
+	var blockElt = document.getElementsByClassName(position)[0];
 
-		var position = this.getPositionClass(line, col);
-		var blockElt = document.getElementsByClassName(position)[0];
+	if (!blockElt.classList.contains("explode")){
 
-		if (!blockElt.classList.contains("explode")){
+		this.switchClass(blockElt, "combo", "explode");
+		//blockElt.className = "tile "+ position + " empty";
 
-			this.switchClass(blockElt, "combo", "explode");
-			//blockElt.className = "tile "+ position + " empty";
-
-			// When animation finishes, delete element from DOM
-			blockElt.addEventListener('webkitTransitionEnd', this.afterExplode(blockElt, line, col), false);
-		}
+		// When animation finishes, delete element from DOM
+		blockElt.addEventListener('webkitTransitionEnd', this.afterExplode(blockElt, line, col), false);
 	}
 };
 
 /** Renders fall */
 Renderer.prototype.renderFall = function(block, line, col){
 
-	if (block.isFalling()){
+	var position = this.getPositionClass(line, col);
+	var blockElt = document.getElementsByClassName(position)[0];
 
-		var position = this.getPositionClass(line, col);
-		var blockElt = document.getElementsByClassName(position)[0];
+	if (!blockElt.classList.contains("fall")){
+		
+		var newLine = this.board.nextAvailableLine(line, col);
+		var newPosition = this.getPositionClass(newLine, col);
 
-		if (!blockElt.classList.contains("fall")){
-			
-			var newLine = this.board.nextAvailableLine(line, col);
-			var newPosition = this.getPositionClass(newLine, col);
-
-			this.switchClass(blockElt, "none", "fall");
-			this.switchClass(blockElt, position, newPosition);
-			blockElt.addEventListener('webkitTransitionEnd', this.afterFall(blockElt, block, line, newLine, col), false);
-		}
+		this.switchClass(blockElt, "none", "fall");
+		this.switchClass(blockElt, position, newPosition);
+		blockElt.addEventListener('webkitTransitionEnd', this.afterFall(blockElt, block, line, newLine, col), false);
 	}
 };
 
 /** Renders right */
 Renderer.prototype.renderRight = function(block, line, col){
 
-	if (block.isMovingRight()){
+	var position = this.getPositionClass(line, col);
+	var blockElt = this.getMovingRightElement(position);
 
-		var position = this.getPositionClass(line, col);
-		var blockElt = this.getMovingRightElement(position);
+	if (!blockElt.classList.contains("right")){
+		
+		this.blockSwapRight = block;
+		this.moveLine = line;
+		this.moveCol = col;
 
-		if (!blockElt.classList.contains("right")){
-			
-			this.blockSwapRight = block;
-			this.moveLine = line;
-			this.moveCol = col;
+		// Handle Shifting Right: because there is no block on the right side
+		if (this.board.getBlock(line, col+1) == null){
+			this.leftFinished = true;
+		}
 
-			// Handle Shifting Right: because there is no block on the right side
-			if (this.board.getBlock(line, col+1) == null){
-				this.leftFinished = true;
-			}
+		var newPosition = this.getPositionClass(line, col+1);
 
-			var newPosition = this.getPositionClass(line, col+1);
-
-			this.switchClass(blockElt, "none", "right");
-			this.switchClass(blockElt, position, newPosition);
-			blockElt.addEventListener('webkitTransitionEnd', this.afterRightMove(blockElt), false);
-		}	
-	} 
+		this.switchClass(blockElt, "none", "right");
+		this.switchClass(blockElt, position, newPosition);
+		blockElt.addEventListener('webkitTransitionEnd', this.afterRightMove(blockElt), false);
+	}	
 };
 
 /** Renders left */
 Renderer.prototype.renderLeft = function(block, line, col){
-	
-	if (block.isMovingLeft()) {
 
-		this.blockSwapLeft = block;
-		this.moveLine = line;
-		this.moveCol = col-1;
+	this.blockSwapLeft = block;
+	this.moveLine = line;
+	this.moveCol = col-1;
 
-		// Handle Shifting Left: because there is no block on the left side
-		if (this.board.getBlock(line, col-1) == null){
-			this.rightFinished = true;
-		}
-
-		// Move left					
-		var position = this.getPositionClass(line, col);
-		var newPosition = this.getPositionClass(line, col-1);
-		var blockElt = this.getMovingLeftElement(position);
-
-		this.switchClass(blockElt, "none", "left");
-		this.switchClass(blockElt, position, newPosition);
-
-		blockElt.addEventListener('webkitTransitionEnd', this.afterLeftMove(blockElt), false);
+	// Handle Shifting Left: because there is no block on the left side
+	if (this.board.getBlock(line, col-1) == null){
+		this.rightFinished = true;
 	}
+
+	// Move left					
+	var position = this.getPositionClass(line, col);
+	var newPosition = this.getPositionClass(line, col-1);
+	var blockElt = this.getMovingLeftElement(position);
+
+	this.switchClass(blockElt, "none", "left");
+	this.switchClass(blockElt, position, newPosition);
+
+	blockElt.addEventListener('webkitTransitionEnd', this.afterLeftMove(blockElt), false);
 };
 
 /** Switches css class */
@@ -229,6 +241,7 @@ Renderer.prototype.getMovingRightElement = function(position){
 	var blockElts = document.getElementsByClassName(position);
 	for (var i = 0; i < blockElts.length; i++){
 		var blockElt = blockElts[i];
+		// Make sure to skip the cursor
 		if (blockElt.id != "cursor"){
 			result = blockElt;
 		}
@@ -260,13 +273,14 @@ Renderer.prototype.getMovingLeftElement = function(position){
 };
 
 /** Updates board after swap finishes */ 
-Renderer.prototype.updateBoardAfterSwap = function(){
+Renderer.prototype.afterSwap = function(){
 
 	if (this.swapLeftElt != null){
 		if (this.board.isBlockUnderneath(this.moveLine, this.moveCol)){
 			this.switchClass(this.swapLeftElt, "left", "none");
 		} else {
 			this.switchClass(this.swapLeftElt, "left", "hover");
+			this.game.hover();
 		}
 	}
 	
@@ -275,12 +289,16 @@ Renderer.prototype.updateBoardAfterSwap = function(){
 			this.switchClass(this.swapRightElt, "right", "none");
 		} else {
 			this.switchClass(this.swapRightElt, "right", "hover");
+			this.game.hover();
 		}
 	}
 
 	this.board.swap(this.moveLine, this.moveCol);
 
-	this.game.ready();
+	// Update game state
+	if (this.game.isSwap()){
+		this.game.ready();	
+	}
 
 	// Reset swap variables
 	this.moveLine = null;
@@ -323,42 +341,6 @@ Renderer.prototype.afterExplode = function(blockElt, line, col){
 	this.board.fallCascade(line, col);
 	this.board.setBlock(null, line, col);
 };
-
-/** Renders a swap */
-Renderer.prototype.renderSwap = function(leftBlock, rightBlock, line, col){
-
-	var posLeft = this.getPositionClass(line, col);
-	var posRight = this.getPositionClass(line, col+1);
-
-	var blockLeftElt = null;
-	var blockRightElt = null;
-
-	if (leftBlock != null){
-		blockLeftElt = document.getElementsByClassName(posLeft)[0];
-		blockLeftElt.classList.remove(posLeft);
-		blockLeftElt.classList.add("swap");
-		blockLeftElt.classList.add(posRight);
-	}
-
-	if (rightBlock != null){
-		blockRightElt = document.getElementsByClassName(posRight)[0];
-		blockRightElt.classList.remove(posRight);
-		blockRightElt.classList.add("swap");
-		blockRightElt.classList.add(posLeft);
-	}
-
-	(leftBlock != null) ? 
-		blockLeft.addEventListener('webkitTransitionEnd', this.afterSwap(leftBlock, rightBlock, line, col), false) :
-		blockRight.addEventListener('webkitTransitionEnd', this.afterSwap(leftBlock, rightBlock, line, col), false);
-};
-
-/** After swap */
-Renderer.prototype.afterSwap = function(leftBlock, rightBlock, line, col){
-	this.board.setBlock(rightBlock, line, col);
- 	this.board.setBlock(leftBlock, line, col+1);
- 	if (leftBlock != null) leftBlock.setNone();
- 	if (rightBlock != null) rightBlock.setNone();
- };
 
 /** Clears the content */
 Renderer.prototype.clear = function(){

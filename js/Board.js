@@ -13,7 +13,32 @@ function Board(board, width, height){
 
 	this.board = [];
 	(board == undefined) ? this.generate() : this.board = board;
+
+	this.hoverPos = {x: null, y: null};
 }
+
+/** Returns hovering */
+Board.prototype.isHovering = function(){
+	return this.hoverPos.x != null && this.hoverPos != null;
+};
+
+/** Sets hovering */
+Board.prototype.setHovering = function(line, col){
+	this.hoverPos.x = col;
+	this.hoverPos.y = line;
+};
+
+/** Sets hovering */
+Board.prototype.getHoveringPos = function(){
+	return this.hoverPos;
+};
+
+/** Returns hovering */
+Board.prototype.stopHover = function(){
+	var block = this.board[this.hoverPos.y][this.hoverPos.x];
+	block.setNone();
+	this.setHovering(null, null);
+};
 
 /** Returns board's height */
 Board.prototype.getHeight = function(){
@@ -146,8 +171,12 @@ Board.prototype.applyGravity = function(){
 		for (var col = 0; col < this.width; col++){
 			var block = this.board[line][col];
 			if (block != null){
-				if (!this.isBlockUnderneath(line, col) && !block.isHovering()){
-					block.fall();
+				if (!this.isBlockUnderneath(line, col)){ 
+					if (!block.isHovering()){
+						block.fall();
+					} else {
+						this.setHovering(line, col);
+					}
 				}
 			}
 		}

@@ -5,7 +5,7 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
-var states = ["ready", "swap"];
+var states = ["ready", "swap", "hover"];
 
  function Game(board){
 
@@ -23,6 +23,15 @@ var states = ["ready", "swap"];
  Game.prototype.swap = function(){
  	console.log("swap");
  	return this.state = "swap";
+ };
+
+ Game.prototype.hover = function(){
+ 	console.log("hover");
+ 	return this.state = "hover";
+ };
+
+ Game.prototype.isHover = function(){
+ 	return this.state == "hover";
  };
 
  Game.prototype.ready = function(){
@@ -52,6 +61,9 @@ var states = ["ready", "swap"];
  		parent.board.applyGravity();
  		parent.board.searchCombos();
  		parent.renderer.refresh();
+
+ 		
+ 		
  	}, 1);
  };
 

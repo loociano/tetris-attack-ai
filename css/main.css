@@ -365,6 +365,10 @@ div.line {
 	border-color: rgb(147, 52, 147);
 }
 
+.block.purple.hover {
+	background-color: rgb(205, 136, 212);
+}
+
 .right {
 	transition: 0.15s linear;
 }
@@ -374,10 +378,5 @@ div.line {
 }
 
 .block.hover {
-	border-color: rgba(255, 255, 255, 0.6);
-}
-
-.left,
-.right {
 	border-color: rgba(255, 255, 255, 0.6);
 }

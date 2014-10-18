@@ -110,11 +110,13 @@ InputListener.prototype.down = function(){
 
 /** Action on swap */
 InputListener.prototype.swap = function(){
-	if (!this.game.isSwap()){
+	if (!this.game.isSwap() && !this.game.isHover()){
 		if (this.cursor.swap()){
 			this.game.swap();
 		} else {
 			this.game.ready();
 		}
+	} else {
+		console.info('Cant swap now');
 	}
 };
