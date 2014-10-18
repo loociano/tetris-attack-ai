@@ -7,6 +7,7 @@
  */
 
 var hoverTimeMillis = 200; 
+var comboMillis = 500; 
 
 function Renderer(game, board, cursor){
 	this.game = game;
@@ -332,7 +333,10 @@ Renderer.prototype.afterFall = function(blockElt, block, line, newLine, col){
 
 /** Callback after combo finishes */
 Renderer.prototype.afterCombo = function(){
-	this.board.explodeCombos();
+	var parent = this;
+	window.setTimeout(function(){
+		parent.board.explodeCombos();	
+	}, comboMillis);
 };
 
 /** Callback after explosion finishes */
