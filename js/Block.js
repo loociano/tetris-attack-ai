@@ -6,7 +6,7 @@
  */
 
 /** Block Types */
-var types = ["blue", "yellow", "red", "purple", "green", "silver", "blue"];
+var types = ["blue", "yellow", "red", "purple", "green", "silver"];
 
 /** Block States */
 var states = ["none", "left", "right", "floating", "fall", "combo", "explode"];
@@ -126,12 +126,14 @@ Block.prototype.setDistinctRandomType = function(forbiddenTypes){
 
 	var otherTypes = types.slice(0); // Copy types
 	for(var i = 0; i < forbiddenTypes.length; i++){
-		var index = types.indexOf(forbiddenTypes[i]);
+		var index = otherTypes.indexOf(forbiddenTypes[i]);
 		if (index != -1){
 			otherTypes.splice(index, 1); // Remove given type
 		}
 	}
-	this.type = otherTypes[Math.round(Math.random() * (otherTypes.length - 1))];
+	var random = Math.random() * (otherTypes.length - 1);
+	var randomInt = Math.floor(random);
+	this.type = otherTypes[randomInt];
 };
 
 /** Returns type */

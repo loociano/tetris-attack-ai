@@ -213,10 +213,11 @@ Board.prototype.searchHorizontalCombos = function(){
 			if (block != null && !block.isExploding()){
 				if (block.compareType(previousBlock)){
 					count++;
-					if (col < this.width - 1) // Last line handling
+					if (col < this.width - 1) // Continue counting until last block in line
 						continue;
 				}
 			}
+			// Execute during the last column
 			if (count > 2){
 				while(count > 0){
 					var offset = 0;
