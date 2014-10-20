@@ -365,10 +365,6 @@ div.line {
 	border-color: rgb(147, 52, 147);
 }
 
-.block.purple.hover {
-	background-color: rgb(205, 136, 212);
-}
-
 .right {
 	transition: 0.15s linear;
 }
@@ -379,7 +375,7 @@ div.line {
 
 /* Hover */
 .block.hover {
-	border-color: rgba(255, 255, 255, 0.6);
+	/*border-color: rgba(255, 255, 255, 0.6);*/
 }
 
 /* Combos */
@@ -387,7 +383,6 @@ div.line {
 	background-color: white;
 	border-color: white;
 	transition: 0.5s linear;
-	opacity: 0.5;
 }
 
 /* Explosions */
