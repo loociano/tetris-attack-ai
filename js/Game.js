@@ -16,6 +16,12 @@ var states = ["ready", "swap", "hover"];
  	this.id = null;
  }
 
+/** Adds points, one by default. Returns the number of points */
+ Game.prototype.addPoint = function(points){
+ 	(points == undefined) ? this.points++ : this.points += points;
+ 	return this.points;
+ };
+
  Game.prototype.isSwap = function(){
  	return this.state == "swap";
  };
@@ -47,6 +53,7 @@ var states = ["ready", "swap", "hover"];
  Game.prototype.start = function(){
 
  	this.state = "ready";
+ 	this.points = 0;
 
  	this.ai = new Ai(this.board);
  	this.cursor = new Cursor(this.board);
@@ -61,9 +68,6 @@ var states = ["ready", "swap", "hover"];
  		parent.board.applyGravity();
  		parent.board.searchCombos();
  		parent.renderer.refresh();
-
- 		
- 		
  	}, 1);
  };
 

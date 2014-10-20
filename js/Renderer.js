@@ -19,6 +19,9 @@ function Renderer(game, board, cursor){
 	this.containerElt.className = "container";
 	this.containerElt.id = "game";
 
+	this.pointsElt = document.createElement("div");
+	this.pointsElt.className = "number";
+
 	this.boardElt = document.createElement("div");
 	this.boardElt.className = "board";
 
@@ -44,6 +47,7 @@ function Renderer(game, board, cursor){
 Renderer.prototype.render = function(){
 	this.renderGrid();
 	this.renderBoard();
+	this.renderPoints();
 	this.renderCursor();
 };
 
@@ -157,7 +161,6 @@ Renderer.prototype.renderExplode = function(block, line, col){
 	if (!blockElt.classList.contains("explode")){
 
 		this.switchClass(blockElt, "combo", "explode");
-		//blockElt.className = "tile "+ position + " empty";
 
 		// When animation finishes, delete element from DOM
 		blockElt.addEventListener('webkitTransitionEnd', this.afterExplode(blockElt, line, col), false);
@@ -344,6 +347,9 @@ Renderer.prototype.afterExplode = function(blockElt, line, col){
 	blockElt.remove();
 	this.board.fallCascade(line, col);
 	this.board.setBlock(null, line, col);
+
+	// Increase points
+	this.updatePoints(this.game.addPoint());
 };
 
 /** Clears the content */
@@ -364,7 +370,26 @@ Renderer.prototype.renderGrid = function(){
 			this.boardElt.appendChild(gridElt);
 		}
 	}
-}
+};
+
+/** Renders the points panel */
+Renderer.prototype.renderPoints = function(){
+
+	var pointsContainerElt = document.createElement("div");
+	pointsContainerElt.id = "points";
+	var titleElt = document.createElement("h1");
+	titleElt.innerText = "Points";
+	pointsContainerElt.appendChild(titleElt);
+	
+	this.pointsElt.innerText = "0";
+	pointsContainerElt.appendChild(this.pointsElt);
+
+	this.containerElt.appendChild(pointsContainerElt);
+};
+
+Renderer.prototype.updatePoints = function(points){
+	this.pointsElt.innerText = points;
+};
 
 /** Renders board on HTML */
 Renderer.prototype.renderBoard = function(){
