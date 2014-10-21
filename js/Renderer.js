@@ -7,7 +7,7 @@
  */
 
 var hoverTimeMillis = 150; 
-var comboMillis = 500; 
+var comboMillis = 500;
 
 var size = 59;
 
@@ -15,6 +15,12 @@ function Renderer(game, board, cursor){
 	this.game = game;
 	this.board = board;
 	this.cursor = cursor;
+
+	// Pixel offset rate. Determines how many pixels to rise per cycle
+	this.offsetRate = this.game.speed * this.game.tickMills / 1000;
+
+	// Current offset. To determine when to add a new block line.
+	this.currOffset = 0;
 
 	this.bodyElt = document.body;
 	this.containerElt = document.createElement("div");
@@ -49,6 +55,7 @@ function Renderer(game, board, cursor){
 Renderer.prototype.render = function(){
 	this.renderGrid();
 	this.renderBoard();
+	this.renderDisabledLine();
 	this.renderPoints();
 	this.renderCursor();
 };
@@ -56,14 +63,44 @@ Renderer.prototype.render = function(){
 /** Rises the blocks */
 Renderer.prototype.rise = function(){
 
+	// Rise blocks
 	var blockElts = document.getElementsByClassName("block");
 	for (var i = 0; i < blockElts.length; i++){
 		var blockElt = blockElts[i];
-		if (!this.addOffsetY(blockElt, -0.5)){
+		if (!this.addOffsetY(blockElt, -this.offsetRate)){
 			return false;
 		}
 	}
+	// Grow new line
+	this.riseNewLine();
+
+	// Rise cursor
+	this.addOffsetY(this.cursorElt, -this.offsetRate);
+
+	// Update current offset
+	this.currOffset += this.offsetRate;
+
+	if (this.currOffset > size){
+		// Lift board one line
+		this.board.lift();
+		// Add a new line
+		this.board.pushNewLine();
+		// Reset offset
+		this.currOffset = this.currOffset - size;
+
+		this.renderNewLine();
+	}
+
 	return true;
+};
+
+Renderer.prototype.riseNewLine = function(){
+	var blockElts = document.getElementsByClassName("disabled");
+	for (var col = 0; col < blockElts.length; col++){
+		blockElt = blockElts[col];
+		blockElt.style.height = this.currOffset+"px";
+		blockElt.style.borderBottom = 0;
+	}
 };
 
 /** Refreshes */
@@ -78,15 +115,15 @@ Renderer.prototype.refresh = function(){
 				switch(block.getState()){
 
 					case "combo":
-						this.renderCombo(block, line, col);
+						//this.renderCombo(block, line, col);
 						break;
 
 					case "explode":
-						this.renderExplode(block, line, col);
+						//this.renderExplode(block, line, col);
 						break;
 
 					case "fall":
-						this.renderFall(block, line, col);
+						//this.renderFall(block, line, col);
 						break;
 
 					case "right":
@@ -375,6 +412,15 @@ Renderer.prototype.afterExplode = function(blockElt, line, col){
 	this.updatePoints(this.game.addPoint());
 };
 
+/** Callback after new line becomes available */
+Renderer.prototype.renderNewLine = function(){
+	var blockElts = document.getElementsByClassName("disabled");
+	while (blockElts.length > 0){
+		this.switchClass(blockElts[0], "disabled", "none");
+	}
+	this.renderDisabledLine();
+};
+
 /** Clears the content */
 Renderer.prototype.clear = function(){
 	var container = document.getElementById("game");
@@ -397,8 +443,8 @@ Renderer.prototype.renderGrid = function(){
 
 /** Sets the position using CSS transform */
 Renderer.prototype.setPosition = function(elt, line, col){
-	var x = (col*size);
-	var y = ((this.board.getHeight()-1-line)*size);
+	var x = col * size;
+	var y = (this.board.getHeight()-1-line) * size;
 	elt.style.transform = "matrix(1, 0, 0, 1, " + x + ", " + y + ")";
 };
 
@@ -415,6 +461,21 @@ Renderer.prototype.getPositionY = function(elt){
 /** Sets the CSS transform vertical position for an HTML Element */
 Renderer.prototype.setPositionY = function(elt, y){
 	var array = this.matrixToArray(elt.style.transform);
+	array[5] = y;
+	elt.style.transform = this.arrayToMatrix(array);
+};
+
+/** Sets the CSS transform horizontal position for an HTML Element */
+Renderer.prototype.setPositionX = function(elt, x){
+	var array = this.matrixToArray(elt.style.transform);
+	array[4] = x;
+	elt.style.transform = this.arrayToMatrix(array);
+};
+
+/** Sets the CSS transform horizontal position for an HTML Element */
+Renderer.prototype.setPositionXY = function(elt, x, y){
+	var array = this.matrixToArray(elt.style.transform);
+	array[4] = x;
 	array[5] = y;
 	elt.style.transform = this.arrayToMatrix(array);
 };
@@ -472,7 +533,7 @@ Renderer.prototype.renderBoard = function(){
 			var block = this.board.getBlock(line, col);
 			if (block != null){
 				var blockElt = document.createElement("div");
-				this.setClassNames(blockElt, block, line, col);
+				this.setClassNames(blockElt, block);
 				this.setPosition(blockElt, line, col);
 				this.boardElt.appendChild(blockElt);
 			}
@@ -482,18 +543,30 @@ Renderer.prototype.renderBoard = function(){
 	this.bodyElt.appendChild(this.containerElt);
 };
 
+/** Renders the new line */
+Renderer.prototype.renderDisabledLine = function(){
+	for (var col = 0; col < this.board.getWidth(); col++){
+		var block = this.board.getNewLineBlock(col);
+
+		var blockElt = document.createElement("div");
+		this.setClassNames(blockElt, block);
+		this.setPosition(blockElt, -1, col);
+		this.boardElt.appendChild(blockElt);
+	}
+};
+
 /** Renders the cursor */
 Renderer.prototype.renderCursor = function(){
 	position = this.cursor.getPosition();
-	this.cursorElt.classList.add(this.getPositionClass(position.y, position.x));
+	this.setPosition(this.cursorElt, position.y, position.x);
 	this.boardElt.appendChild(this.cursorElt);
 };
 
 /** Updates the position of the cursor */
 Renderer.prototype.updateCursor = function(){
-	this.cursorElt.classList.remove(this.getPositionClass(position.y, position.x));
 	position = this.cursor.getPosition();
-	this.cursorElt.classList.add(this.getPositionClass(position.y, position.x));
+	this.setPosition(this.cursorElt, position.y, position.x);
+	this.addOffsetY(this.cursorElt, -this.currOffset);
 }
 
 /** Returns the position CSS class given a line and col */ 
@@ -502,17 +575,6 @@ Renderer.prototype.getPositionClass = function(line, col){
 }
 
 /** Sets the class names for blocks */
-Renderer.prototype.setClassNames = function(blockElt, block, line, col){
-
-	blockElt.className = "";
-
-	var classNames = "tile block " + block.getType() + " " + block.getState() + " ";
-	
-	// Handle new position when falling
-	var theLine = line;
-	if (block.isFalling()){
-		theLine = this.board.nextAvailableLine(line,col);
-	}
-	//classNames += this.getPositionClass(theLine, col);
-	blockElt.className = classNames;
+Renderer.prototype.setClassNames = function(blockElt, block){
+	blockElt.className = "tile block " + block.getType() + " " + block.getState();
 };

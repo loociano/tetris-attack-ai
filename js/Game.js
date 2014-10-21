@@ -16,7 +16,9 @@ var states = ["ready", "swap", "hover"];
 
  	this.id = null;
  	this.tickMills = 50;
- 	this.riseMillis = 50; 
+
+ 	// Pixels per second. Can be decimal.
+ 	this.speed = 10;
  }
 
 /** Adds points, one by default. Returns the number of points */
@@ -72,7 +74,7 @@ var states = ["ready", "swap", "hover"];
  		parent.board.searchCombos();
  		parent.renderer.refresh();
  		if (!parent.renderer.rise()){
- 			parent.onGameOver();	
+ 			parent.onGameOver();
  		}
  	}, this.tickMills);
  };
@@ -80,7 +82,6 @@ var states = ["ready", "swap", "hover"];
 /** Game over */
  Game.prototype.onGameOver = function(){
  	window.clearInterval(this.id);
- 	alert('game over');
  };
 
 /** Restarts game */

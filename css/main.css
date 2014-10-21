@@ -40,7 +40,7 @@ div.board {
 	height: 37em;
 	position: absolute;
 	background: #bbb;
-	border: 1.5em solid #eee;
+	border: 1.2em solid #eee;
 	border-radius: 1em;
 }
 
@@ -373,11 +373,6 @@ div.line {
 	transition: 0.15s linear;
 }
 
-/* Hover */
-.block.hover {
-	/*border-color: rgba(255, 255, 255, 0.6);*/
-}
-
 /* Combos */
 .block.combo {
 	background-color: white;
@@ -388,4 +383,9 @@ div.line {
 /* Explosions */
 .block.explode {
 	background-color: white;
+}
+
+.block.disabled {
+	height: 0;
+	position: fixed;
 }

@@ -12,6 +12,8 @@ function Board(board, width, height){
 	(height == undefined) ? this.height = 10 : this.height = height;
 
 	this.board = [];
+	this.newLine = []; // New line waiting below the board.
+
 	(board == undefined) ? this.generate() : this.board = board;
 
 	this.hoverPos = {x: null, y: null};
@@ -53,6 +55,11 @@ Board.prototype.getWidth = function(){
 /** Returns block given a line and column */
 Board.prototype.getBlock = function(line, col){
 	return this.board[line][col];
+};
+
+/** Returns block from the new line given column */
+Board.prototype.getNewLineBlock = function(col){
+	return this.newLine[col];
 };
 
 /** Sets block given a line and column */
@@ -288,6 +295,7 @@ Board.prototype.generateEmpty = function(width, height){
 Board.prototype.generate = function(){
 
 	this.generateEmpty();
+	this.generateNewLine();
 
 	// Leave top-line empty
 	for (var line = 0; line < this.height - 1; line++){
@@ -298,6 +306,52 @@ Board.prototype.generate = function(){
 					this.board[line][col] = block;
 					this.setCorrectType(line, col);
 				}
+			}
+		}
+	}
+};
+
+/** Generates a new line */
+Board.prototype.generateNewLine = function(){
+	
+	if (this.newLine.length > 0)
+		this.newLine = [];
+
+	for (var col = 0; col < this.width; col++){
+		var block = new Block();
+		block.disabled();
+		this.newLine.push(block);
+	}
+};
+
+/** Pushes the new line into the board */
+Board.prototype.pushNewLine = function(){
+
+	// Enable new line
+	this.enableNewLine();
+	
+	// Remove first element (bottom row) and add new line
+	this.board.splice(0, 1);
+	this.board.splice(0, 0, this.newLine);
+
+	this.generateNewLine();
+};
+
+/** Enables the blocks in the new line by setting status none */
+Board.prototype.enableNewLine = function(){
+	for (var col = 0; col < this.newLine.length; col++){
+		this.newLine[col].setNone();
+	}
+};
+
+/** Lifts all blocks one place upwards */
+Board.prototype.lift = function(){
+	for (var line = this.height - 1; line >= 0; line--){
+		for (var col = this.width - 1; col >= 0; col--){
+			var block = this.board[line][col];
+			if (block != null){
+				this.board[line+1][col] = block;
+				this.board[line][col] = null;
 			}
 		}
 	}
