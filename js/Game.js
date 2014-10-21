@@ -7,6 +7,7 @@
  */
 var states = ["ready", "swap", "hover"];
 
+/** Game constructor */
  function Game(board){
 
  	(board == undefined) ? 
@@ -14,6 +15,8 @@ var states = ["ready", "swap", "hover"];
  		this.board = new Board(board, board[0].length, board.length);
 
  	this.id = null;
+ 	this.tickMills = 50;
+ 	this.riseMillis = 50; 
  }
 
 /** Adds points, one by default. Returns the number of points */
@@ -68,7 +71,16 @@ var states = ["ready", "swap", "hover"];
  		parent.board.applyGravity();
  		parent.board.searchCombos();
  		parent.renderer.refresh();
- 	}, 1);
+ 		if (!parent.renderer.rise()){
+ 			parent.onGameOver();	
+ 		}
+ 	}, this.tickMills);
+ };
+
+/** Game over */
+ Game.prototype.onGameOver = function(){
+ 	window.clearInterval(this.id);
+ 	alert('game over');
  };
 
 /** Restarts game */

@@ -6,8 +6,10 @@
  * Oct 2014
  */
 
-var hoverTimeMillis = 200; 
+var hoverTimeMillis = 150; 
 var comboMillis = 500; 
+
+var size = 59;
 
 function Renderer(game, board, cursor){
 	this.game = game;
@@ -51,6 +53,19 @@ Renderer.prototype.render = function(){
 	this.renderCursor();
 };
 
+/** Rises the blocks */
+Renderer.prototype.rise = function(){
+
+	var blockElts = document.getElementsByClassName("block");
+	for (var i = 0; i < blockElts.length; i++){
+		var blockElt = blockElts[i];
+		if (!this.addOffsetY(blockElt, -0.5)){
+			return false;
+		}
+	}
+	return true;
+};
+
 /** Refreshes */
 Renderer.prototype.refresh = function(){
 
@@ -86,28 +101,36 @@ Renderer.prototype.refresh = function(){
 						this.renderHover(block, line, col);
 						break;
 				}
-
-				// Check if any swap has finished
-				if (this.leftFinished && this.rightFinished){
-					this.afterSwap(line, col);
-				}
-
-				// Check hover
-				if (this.board.isHovering()){
-
-					var parent = this;
-
-					if (!this.hoverTimeoutSet){
-	 					window.setTimeout(function(){
-	 						var pos = parent.board.getHoveringPos();
-	 						parent.afterHover(pos.y, pos.x);
-	 						parent.hoverTimeoutSet = false;
-	 					}, hoverTimeMillis);
-	 					this.hoverTimeoutSet = true;
- 					}
- 				}
 			}
+
+			// Check if any swap has finished
+			if (this.leftFinished && this.rightFinished){
+				this.afterSwap(line, col);
+			}
+
+			// Check hover
+			if (this.board.isHovering()){
+				this.setHoverTimeout();
+			}	
 		}
+	}
+};
+
+Renderer.prototype.setHoverTimeout = function(){
+
+	var parent = this;
+
+	if (!this.hoverTimeoutSet){
+		
+		window.setTimeout(function(){
+			
+			var pos = parent.board.getHoveringPos();
+			parent.afterHover(pos.y, pos.x);
+			parent.hoverTimeoutSet = false;
+
+		}, hoverTimeMillis);
+
+		this.hoverTimeoutSet = true;
 	}
 };
 
@@ -361,15 +384,65 @@ Renderer.prototype.clear = function(){
 
 /** Renders the grid behind the blocks */
 Renderer.prototype.renderGrid = function(){
-	var size = 3.7;
+	
 	for (var line = this.board.getHeight() - 1; line >= 0; line--){
 		for (var col = 0; col < this.board.getWidth(); col++){
 			var gridElt = document.createElement("div");
 			gridElt.className = "tile empty";
-			gridElt.style.transform = "translate("+(col*size)+"em, "+(line*size)+"em)";
+			this.setPosition(gridElt, line, col);
 			this.boardElt.appendChild(gridElt);
 		}
 	}
+};
+
+/** Sets the position using CSS transform */
+Renderer.prototype.setPosition = function(elt, line, col){
+	var x = (col*size);
+	var y = ((this.board.getHeight()-1-line)*size);
+	elt.style.transform = "matrix(1, 0, 0, 1, " + x + ", " + y + ")";
+};
+
+/** Returns the CSS transform horizontal position given an HTML Element */
+Renderer.prototype.getPositionX = function(elt){
+	return this.matrixToArray(elt.style.transform)[4];
+};
+
+/** Returns the CSS transform vertical position given an HTML Element */
+Renderer.prototype.getPositionY = function(elt){
+	return this.matrixToArray(elt.style.transform)[5];
+};
+
+/** Sets the CSS transform vertical position for an HTML Element */
+Renderer.prototype.setPositionY = function(elt, y){
+	var array = this.matrixToArray(elt.style.transform);
+	array[5] = y;
+	elt.style.transform = this.arrayToMatrix(array);
+};
+
+/** Sets the CSS transform vertical position for an HTML Element */
+Renderer.prototype.addOffsetY = function(elt, offset){
+
+	var array = this.matrixToArray(elt.style.transform);
+	var y = parseFloat(array[5]);
+	y += offset;
+
+	if (y < 0) {
+		return false;
+	} else {
+		array[5] = y.toString();
+		elt.style.transform = this.arrayToMatrix(array);
+		return true;
+	}
+};
+
+/** Returns the CSS transform matrix given an HTML Element */ 
+Renderer.prototype.matrixToArray = function(str){
+    return str.match(/(-?[0-9\.]+)/g);
+};
+
+/** Returns the CSS transform matrix given an HTML Element */ 
+Renderer.prototype.arrayToMatrix = function(array){
+	return "matrix("+array[0]+","+array[1]+","+array[2]+","+array[3]+","+array[4]+","+array[5]+")";
 };
 
 /** Renders the points panel */
@@ -400,6 +473,7 @@ Renderer.prototype.renderBoard = function(){
 			if (block != null){
 				var blockElt = document.createElement("div");
 				this.setClassNames(blockElt, block, line, col);
+				this.setPosition(blockElt, line, col);
 				this.boardElt.appendChild(blockElt);
 			}
 		}
@@ -439,6 +513,6 @@ Renderer.prototype.setClassNames = function(blockElt, block, line, col){
 	if (block.isFalling()){
 		theLine = this.board.nextAvailableLine(line,col);
 	}
-	classNames += this.getPositionClass(theLine, col);
+	//classNames += this.getPositionClass(theLine, col);
 	blockElt.className = classNames;
 };
