@@ -9,7 +9,9 @@
 var hoverTimeMillis = 150; 
 var comboMillis = 500;
 
-var size = 59;
+var blockSize = 48;
+var blockBorder = 5;
+var size = blockSize + 2 * blockBorder;
 
 function Renderer(game, board, cursor){
 	this.game = game;
@@ -63,12 +65,14 @@ Renderer.prototype.render = function(){
 /** Rises the blocks */
 Renderer.prototype.rise = function(){
 
+	var success = true;
+
 	// Rise blocks
 	var blockElts = document.getElementsByClassName("block");
 	for (var i = 0; i < blockElts.length; i++){
 		var blockElt = blockElts[i];
 		if (!this.addOffsetY(blockElt, -this.offsetRate)){
-			return false;
+			success = false;
 		}
 	}
 	// Grow new line
@@ -90,16 +94,22 @@ Renderer.prototype.rise = function(){
 
 		this.renderNewLine();
 	}
-
-	return true;
+	return success;
 };
 
 Renderer.prototype.riseNewLine = function(){
 	var blockElts = document.getElementsByClassName("disabled");
 	for (var col = 0; col < blockElts.length; col++){
 		blockElt = blockElts[col];
-		blockElt.style.height = this.currOffset+"px";
-		blockElt.style.borderBottom = 0;
+		
+		if (this.currOffset >= blockSize){
+			blockElt.style.height = blockSize + "px";
+			blockElt.style.borderBottomWidth = this.currOffset - blockSize + "px";
+		} else {
+			blockElt.style.height = this.currOffset + "px";
+			blockElt.style.borderBottomWidth = 0;
+		}
+		
 	}
 };
 
@@ -416,6 +426,8 @@ Renderer.prototype.afterExplode = function(blockElt, line, col){
 Renderer.prototype.renderNewLine = function(){
 	var blockElts = document.getElementsByClassName("disabled");
 	while (blockElts.length > 0){
+		blockElts[0].style.borderBottomWidth = "0.35em";
+		blockElts[0].style.height = "48px";
 		this.switchClass(blockElts[0], "disabled", "none");
 	}
 	this.renderDisabledLine();

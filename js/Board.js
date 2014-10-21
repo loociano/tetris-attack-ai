@@ -433,7 +433,7 @@ Board.prototype.generateBlock = function(line){
 	// Empty block probability: increases linearly with height
 	// Height 0 => probability 0
 	// Height maxHeight + 1 => probability 1
-	var emptyBlockProb = line / (2*this.height);
+	var emptyBlockProb = line / (2 * this.height);
 
 	if (Math.random() > emptyBlockProb)
 		return new Block();

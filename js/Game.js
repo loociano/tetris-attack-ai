@@ -18,7 +18,7 @@ var states = ["ready", "swap", "hover"];
  	this.tickMills = 50;
 
  	// Pixels per second. Can be decimal.
- 	this.speed = 10;
+ 	this.speed = 5;
  }
 
 /** Adds points, one by default. Returns the number of points */
