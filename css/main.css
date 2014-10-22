@@ -55,7 +55,7 @@ div.line {
 	width: 3em;
 	height: 3em;
 	border-radius: 5px;
-	transition: 0.1s linear;
+	/*transition: 0.1s linear;*/
 }
 
 #cursor {
@@ -68,7 +68,6 @@ div.line {
 	margin: 0;
 	padding: 0;
 	box-shadow: 0 0 1.5em white;
-	transition: 0.05s ease-in-out;
 }
 
 .empty {
@@ -147,18 +146,18 @@ div.line {
 }
 
 .right {
-	transition: 0.15s linear;
+	/*transition: 0.15s linear;*/
 }
 
 .none {
-	transition: 0.15s linear;
+	/*transition: 0.15s linear;*/
 }
 
 /* Combos */
 .block.combo {
 	background-color: white;
 	border-color: white;
-	transition: 0.5s linear;
+	transition: 0.4s linear;
 }
 
 /* Explosions */
@@ -166,9 +165,17 @@ div.line {
 	background-color: white;
 }
 
+.block.fall {
+	
+}
+
 .block.disabled {
 	border-bottom-width: 0;
 	height: 0;
 	position: fixed;
 	box-shadow: none;
+}
+
+.block {
+	transition: 0.03s ease-out;
 }

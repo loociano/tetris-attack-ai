@@ -5,9 +5,8 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
-
 var hoverTimeMillis = 150; 
-var comboMillis = 500;
+var comboMillis = 1000;
 
 var blockSize = 48;
 var blockBorder = 5;
@@ -17,6 +16,9 @@ function Renderer(game, board, cursor){
 	this.game = game;
 	this.board = board;
 	this.cursor = cursor;
+
+	// Maximum pixel position 
+	this.maxHeightPx = (this.board.getWidth()-1)*size;
 
 	// Pixel offset rate. Determines how many pixels to rise per cycle
 	this.offsetRate = this.game.speed * this.game.tickMills / 1000;
@@ -51,6 +53,8 @@ function Renderer(game, board, cursor){
 	this.swapLeftElt = null;
 
 	this.hoverTimeoutSet = false;
+
+	this.fallQueue = [];
 }
 
 /** Renders all elements of the game */
@@ -71,7 +75,7 @@ Renderer.prototype.rise = function(){
 	var blockElts = document.getElementsByClassName("block");
 	for (var i = 0; i < blockElts.length; i++){
 		var blockElt = blockElts[i];
-		if (!this.addOffsetY(blockElt, -this.offsetRate)){
+		if (!addOffsetY(blockElt, -this.offsetRate)){
 			success = false;
 		}
 	}
@@ -79,7 +83,7 @@ Renderer.prototype.rise = function(){
 	this.riseNewLine();
 
 	// Rise cursor
-	this.addOffsetY(this.cursorElt, -this.offsetRate);
+	addOffsetY(this.cursorElt, -this.offsetRate);
 
 	// Update current offset
 	this.currOffset += this.offsetRate;
@@ -97,6 +101,7 @@ Renderer.prototype.rise = function(){
 	return success;
 };
 
+/** Rises the new line */
 Renderer.prototype.riseNewLine = function(){
 	var blockElts = document.getElementsByClassName("disabled");
 	for (var col = 0; col < blockElts.length; col++){
@@ -125,15 +130,15 @@ Renderer.prototype.refresh = function(){
 				switch(block.getState()){
 
 					case "combo":
-						//this.renderCombo(block, line, col);
+						this.renderCombo(block, line, col);
 						break;
 
 					case "explode":
-						//this.renderExplode(block, line, col);
+						this.renderExplode(block, line, col);
 						break;
 
 					case "fall":
-						//this.renderFall(block, line, col);
+						this.toFallQueue(block, line, col);
 						break;
 
 					case "right":
@@ -158,11 +163,28 @@ Renderer.prototype.refresh = function(){
 			// Check hover
 			if (this.board.isHovering()){
 				this.setHoverTimeout();
-			}	
+			}				
 		}
+	}
+	// Handle fall
+	if (this.fallQueue.length > 0){
+		this.renderFall();
 	}
 };
 
+/** Returns true if all the falling blocks have finished falling */
+Renderer.prototype.fallFinished = function(){
+
+	for (var i = 0; i < this.fallQueue.length; i++){
+		if (!this.fallQueue[i].finished)
+			return false;
+	}
+	// All falls have finished. Flush fall queue.
+	this.fallQueue = [];
+	return true;
+};
+
+/** Set hover timeout */
 Renderer.prototype.setHoverTimeout = function(){
 
 	var parent = this;
@@ -211,8 +233,7 @@ Renderer.prototype.afterHover = function(line, col){
 /** Renders combo */
 Renderer.prototype.renderCombo = function(block, line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = document.getElementsByClassName(position)[0];
+	var blockElt = this.getBlockElt(line, col);
 
 	if (!blockElt.classList.contains("combo")){
 		this.switchClass(blockElt, "none", "combo");
@@ -225,8 +246,7 @@ Renderer.prototype.renderCombo = function(block, line, col){
 /** Renders explode */
 Renderer.prototype.renderExplode = function(block, line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = document.getElementsByClassName(position)[0];
+	var blockElt = this.getBlockElt(line, col);
 
 	if (!blockElt.classList.contains("explode")){
 
@@ -237,20 +257,44 @@ Renderer.prototype.renderExplode = function(block, line, col){
 	}
 };
 
-/** Renders fall */
-Renderer.prototype.renderFall = function(block, line, col){
+/** Adds an element to the falling queue */
+Renderer.prototype.toFallQueue = function(block, line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = document.getElementsByClassName(position)[0];
+	this.fallQueue.push({
+		line: line, 
+		col: col, 
+		finished: false
+	});
+};
 
-	if (!blockElt.classList.contains("fall")){
-		
-		var newLine = this.board.nextAvailableLine(line, col);
-		var newPosition = this.getPositionClass(newLine, col);
+/** Renders the fall of blocks in queue */
+Renderer.prototype.renderFall = function(){
 
-		this.switchClass(blockElt, "none", "fall");
-		this.switchClass(blockElt, position, newPosition);
-		blockElt.addEventListener('webkitTransitionEnd', this.afterFall(blockElt, block, line, newLine, col), false);
+	for (var i = 0; i < this.fallQueue.length; i++){
+
+		if (!this.fallQueue[i].finished){
+
+			var line = this.fallQueue[i].line;
+			var col = this.fallQueue[i].col;
+			var newLine = this.board.nextAvailableLine(line, col);
+
+			var blockElt = this.getBlockElt(line, col);
+
+			this.switchClass(blockElt, "none", "fall");
+
+			var gap = line - newLine;
+			
+			// Compute new vertical pixel position
+			var newY = getPositionY(blockElt) + (gap*size);
+
+			// Start animation
+			setPositionY(blockElt, newY);
+
+			// Update model
+			this.board.moveBlockDown(line, col, newLine);
+			
+			blockElt.addEventListener('webkitTransitionEnd', this.afterFall(i), false);
+		}
 	}
 };
 
@@ -304,7 +348,9 @@ Renderer.prototype.renderLeft = function(block, line, col){
 
 /** Switches css class */
 Renderer.prototype.switchClass = function(elt, oldClass, newClass){
-	elt.classList.remove(oldClass);
+	if (elt.classList.contains(oldClass)) 
+		elt.classList.remove(oldClass);
+	
 	elt.classList.add(newClass);
 };
 
@@ -385,6 +431,7 @@ Renderer.prototype.afterSwap = function(){
 
 /** Callback after left move finishes */
 Renderer.prototype.afterLeftMove = function(blockElt){
+	// Do no remove the "left" class yet, wait the right movement to finish.
 	this.leftFinished = true;
 };
 
@@ -396,12 +443,8 @@ Renderer.prototype.afterRightMove = function(blockElt){
 };
 
 /** Callback after fall finishes */
-Renderer.prototype.afterFall = function(blockElt, block, line, newLine, col){
-	this.board.setBlock(null, line, col);
-	this.board.setBlock(block, newLine, col);
-	blockElt.classList.remove('fall');
-	blockElt.classList.add('none');
-	block.setNone();
+Renderer.prototype.afterFall = function(fallIndex, line, col, newLine){
+	this.fallQueue[fallIndex].finished = true;
 };
 
 /** Callback after combo finishes */
@@ -458,64 +501,6 @@ Renderer.prototype.setPosition = function(elt, line, col){
 	var x = col * size;
 	var y = (this.board.getHeight()-1-line) * size;
 	elt.style.transform = "matrix(1, 0, 0, 1, " + x + ", " + y + ")";
-};
-
-/** Returns the CSS transform horizontal position given an HTML Element */
-Renderer.prototype.getPositionX = function(elt){
-	return this.matrixToArray(elt.style.transform)[4];
-};
-
-/** Returns the CSS transform vertical position given an HTML Element */
-Renderer.prototype.getPositionY = function(elt){
-	return this.matrixToArray(elt.style.transform)[5];
-};
-
-/** Sets the CSS transform vertical position for an HTML Element */
-Renderer.prototype.setPositionY = function(elt, y){
-	var array = this.matrixToArray(elt.style.transform);
-	array[5] = y;
-	elt.style.transform = this.arrayToMatrix(array);
-};
-
-/** Sets the CSS transform horizontal position for an HTML Element */
-Renderer.prototype.setPositionX = function(elt, x){
-	var array = this.matrixToArray(elt.style.transform);
-	array[4] = x;
-	elt.style.transform = this.arrayToMatrix(array);
-};
-
-/** Sets the CSS transform horizontal position for an HTML Element */
-Renderer.prototype.setPositionXY = function(elt, x, y){
-	var array = this.matrixToArray(elt.style.transform);
-	array[4] = x;
-	array[5] = y;
-	elt.style.transform = this.arrayToMatrix(array);
-};
-
-/** Sets the CSS transform vertical position for an HTML Element */
-Renderer.prototype.addOffsetY = function(elt, offset){
-
-	var array = this.matrixToArray(elt.style.transform);
-	var y = parseFloat(array[5]);
-	y += offset;
-
-	if (y < 0) {
-		return false;
-	} else {
-		array[5] = y.toString();
-		elt.style.transform = this.arrayToMatrix(array);
-		return true;
-	}
-};
-
-/** Returns the CSS transform matrix given an HTML Element */ 
-Renderer.prototype.matrixToArray = function(str){
-    return str.match(/(-?[0-9\.]+)/g);
-};
-
-/** Returns the CSS transform matrix given an HTML Element */ 
-Renderer.prototype.arrayToMatrix = function(array){
-	return "matrix("+array[0]+","+array[1]+","+array[2]+","+array[3]+","+array[4]+","+array[5]+")";
 };
 
 /** Renders the points panel */
@@ -585,6 +570,27 @@ Renderer.prototype.updateCursor = function(){
 Renderer.prototype.getPositionClass = function(line, col){
 	return "position-"+ line + "-" + col;
 }
+
+/** Returns a block DOM element given a line and column */
+Renderer.prototype.getBlockElt = function(line, col){
+
+	var maxY = ((this.board.getHeight() - 1) - line) * size;
+	var minY = ((this.board.getHeight() - 1) - line - 1) * size;
+	
+	var blockElts = document.getElementsByClassName("block");
+	for (var i = 0; i < blockElts.length; i++){
+		var blockElt = blockElts[i];
+		var x = getPositionX(blockElt);
+		if (x == col * size){
+			var y = getPositionY(blockElt);
+			if (y <= maxY && y > minY){
+				return blockElt;
+			}
+		} 
+	}
+	console.error('Block Not found');
+	return null;
+};
 
 /** Sets the class names for blocks */
 Renderer.prototype.setClassNames = function(blockElt, block){

@@ -94,6 +94,14 @@ Board.prototype.swap = function(line, col){
 	this.board[line][col+1] = leftBlock;
 };
 
+/** Updates the place of a falling block */
+Board.prototype.moveBlockDown = function(line, col, newLine){
+	var block = this.board[line][col];
+	block.setNone();
+	this.board[line][col] = null;
+	this.board[newLine][col] = block;
+};
+
 /** Returns true if a line contains a given block type */
 Board.prototype.hasBlockInLine = function(type, line){
 	for (var col = 0; col < this.width; col++){
@@ -195,8 +203,9 @@ Board.prototype.fallCascade = function(explodeLine, explodeCol){
 	for (var line = explodeLine; line < this.height; line++){
 		var block = this.board[line][explodeCol];
 		if (block != null){
-			if (!block.isExploding())
+			if (!block.isExploding()){
 				block.fall();
+			}
 		}
 	}
 };
@@ -304,7 +313,7 @@ Board.prototype.generate = function(){
 				var block = this.generateBlock(line);
 				if (block != null){
 					this.board[line][col] = block;
-					this.setCorrectType(line, col);
+					//this.setCorrectType(line, col);
 				}
 			}
 		}
@@ -434,7 +443,7 @@ Board.prototype.generateBlock = function(line){
 	// Height 0 => probability 0
 	// Height maxHeight + 1 => probability 1
 	var emptyBlockProb = line / (2 * this.height);
-
+	
 	if (Math.random() > emptyBlockProb)
 		return new Block();
 	else
@@ -448,6 +457,16 @@ Board.prototype.isBlockUnderneath = function(line, col){
 	return this.board[(line-1)][col] != null;
 };
 
+Board.prototype.isBlockUnderneathFalling = function(line, col){
+	if (line == 0) return false;
+	
+	var underneath = this.board[(line-1)][col];
+	
+	if (underneath == null) return false; 
+	
+	return underneath.isFalling();
+};
+
 Board.prototype.isLeftEmpty = function(line, col){
 	if (line == 0 || this.board[(line-1)][col] == null) 
 		return true;
@@ -459,7 +478,8 @@ Board.prototype.isLeftEmpty = function(line, col){
 	given the block coordinates */
 Board.prototype.nextAvailableLine = function(line, col){
 	for (var l = line; l >= 0; l--){
-		if (this.isBlockUnderneath(l, col)) 
+		if (this.isBlockUnderneath(l, col) && !this.isBlockUnderneathFalling(l, col)){
 			return l;
+		}
 	}
 };
