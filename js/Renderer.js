@@ -563,7 +563,7 @@ Renderer.prototype.renderCursor = function(){
 Renderer.prototype.updateCursor = function(){
 	position = this.cursor.getPosition();
 	this.setPosition(this.cursorElt, position.y, position.x);
-	this.addOffsetY(this.cursorElt, -this.currOffset);
+	addOffsetY(this.cursorElt, -this.currOffset);
 }
 
 /** Returns the position CSS class given a line and col */ 
