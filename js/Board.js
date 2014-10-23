@@ -54,6 +54,10 @@ Board.prototype.getWidth = function(){
 
 /** Returns block given a line and column */
 Board.prototype.getBlock = function(line, col){
+	if (line > this.height - 1 || line < 0 || col > this.width - 1 || col < 0) {
+		console.warn('Cannot find block');
+		return null;
+	}
 	return this.board[line][col];
 };
 
@@ -69,6 +73,11 @@ Board.prototype.setBlock = function(block, line, col){
 
 /** Swaps two blocks given a line and column */
 Board.prototype.swap = function(line, col){
+
+	if (col > this.width - 1) {
+		console.error('Cannot swap');
+		return;
+	}
 
 	var nextCol = col+1;
 	var leftBlock = this.board[line][col];
@@ -168,6 +177,7 @@ Board.prototype.countBlocksInCol = function(type, col){
 
 /** Clean Combos and puts empty blocks */
 Board.prototype.explodeCombos = function(){
+
 	for (var line = 0; line < this.height; line++){
 		for (var col = 0; col < this.width; col++){
 			var block = this.board[line][col];

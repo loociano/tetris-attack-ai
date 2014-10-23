@@ -117,6 +117,6 @@ InputListener.prototype.swap = function(){
 			this.game.ready();
 		}
 	} else {
-		console.info('Cant swap now');
+		console.info('Cant swap now: ' + this.game.getState());
 	}
 };

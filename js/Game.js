@@ -5,7 +5,7 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
-var states = ["ready", "swap", "hover"];
+var states = ["ready", "swap", "hover", "combo"];
 
 /** Game constructor */
  function Game(board){
@@ -27,31 +27,52 @@ var states = ["ready", "swap", "hover"];
  	return this.points;
  };
 
+/** Returns true if game is in swap */
  Game.prototype.isSwap = function(){
  	return this.state == "swap";
  };
 
+/** Sets game to swap */
  Game.prototype.swap = function(){
  	console.log("swap");
- 	return this.state = "swap";
+ 	this.state = "swap";
  };
 
+ /** Returns true if game is in combo */
+ Game.prototype.isCombo = function(){
+ 	return this.state == "combo";
+ };
+
+/** Sets game to combo */
+ Game.prototype.combo = function(){
+ 	console.log("combo");
+ 	this.state = "combo";
+ };
+
+/** Sets game state to hover */
  Game.prototype.hover = function(){
  	console.log("hover");
  	return this.state = "hover";
  };
 
+/** Returns true if game is in hover */
  Game.prototype.isHover = function(){
  	return this.state == "hover";
  };
 
+/** Sets game ready */
  Game.prototype.ready = function(){
  	console.log("ready");
  	return this.state = "ready";
  };
 
+/** Returns true if game is ready */
  Game.prototype.isReady = function(){
  	return this.state == "ready";
+ };
+
+ Game.prototype.getState = function(){
+ 	return this.state;
  };
 
 /** Starts a new game */

@@ -5,8 +5,8 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
-var hoverTimeMillis = 150; 
-var comboMillis = 1000;
+var hoverTimeMillis = 10000; 
+var comboMillis = 2000;
 
 var blockSize = 48;
 var blockBorder = 5;
@@ -53,8 +53,12 @@ function Renderer(game, board, cursor){
 	this.swapLeftElt = null;
 
 	this.hoverBlockElt = null;
-	this.hoverTimeoutSet = false;
 
+	// Timeout identifiers
+	this.hoverTimeoutSet = null;
+	this.comboTimeOut = null;
+
+	this.comboQueue = [];
 	this.fallQueue = [];
 }
 
@@ -79,7 +83,7 @@ Renderer.prototype.refresh = function(){
 				switch(block.getState()){
 
 					case "combo":
-						this.renderCombo(block, line, col);
+						this.toComboQueue(block, line, col);
 						break;
 
 					case "explode":
@@ -102,14 +106,19 @@ Renderer.prototype.refresh = function(){
 						this.renderHover(block, line, col);
 						break;
 				}
-			}
-
-			// Check hover
-			if (this.board.isHovering()){
-				this.setHoverTimeout();
-			}				
+			}					
 		}
 	}
+	// Check hover
+	if (this.board.isHovering()){
+		this.setHoverTimeout();
+	}
+
+	// Handle combo
+	if (this.comboQueue.length > 0 && this.comboFinished()){
+		this.renderCombo();
+	}		
+
 	// Handle fall
 	if (this.fallQueue.length > 0){
 		this.renderFall();
@@ -122,7 +131,7 @@ Renderer.prototype.refresh = function(){
 
 	// Check if any swap has finished
 	if (this.leftFinished && this.rightFinished){
-		this.afterSwap(line, col);
+		this.afterSwap();
 	}
 };
 
@@ -131,37 +140,40 @@ Renderer.prototype.rise = function(){
 
 	var success = true;
 
-	// Rise blocks
-	var blockElts = document.getElementsByClassName("block");
-	for (var i = 0; i < blockElts.length; i++){
-		var blockElt = blockElts[i];
-		if (!addOffsetY(blockElt, -this.offsetRate)){
-			success = false;
+	if (!this.game.isCombo()){
+		// Rise blocks
+		var blockElts = document.getElementsByClassName("block");
+		for (var i = 0; i < blockElts.length; i++){
+			var blockElt = blockElts[i];
+			if (!addOffsetY(blockElt, -this.offsetRate)){
+				success = false;
+			}
 		}
-	}
-	// Grow new line
-	this.riseNewLine();
+		// Grow new line
+		this.riseNewLine();
 
-	// Rise cursor
-	addOffsetY(this.cursorElt, -this.offsetRate);
+		// Rise cursor
+		addOffsetY(this.cursorElt, -this.offsetRate);
 
-	// Update current offset
-	this.currOffset += this.offsetRate;
+		// Update current offset
+		this.currOffset += this.offsetRate;
 
-	if (this.currOffset > size){
-		
-		// Lift board one line
-		this.board.lift();
+		if (this.currOffset > size){
+			
+			// Lift board one line
+			this.board.lift();
 
-		// Lift cursor model
-		this.cursor.up();
-		// Add a new line
-		this.board.pushNewLine();
-		// Reset offset
-		this.currOffset = this.currOffset - size;
+			// Lift cursor model
+			this.cursor.up();
+			
+			// Add a new line
+			this.board.pushNewLine();
+			// Reset offset
+			this.currOffset = this.currOffset - size;
 
-		this.renderNewLine();
+			this.renderNewLine();
 
+		}
 	}
 	return success;
 };
@@ -195,59 +207,63 @@ Renderer.prototype.fallFinished = function(){
 	return true;
 };
 
+/** Returns true if all the combo blocks have finished animating */
+Renderer.prototype.comboFinished = function(){
+
+	for (var i = 0; i < this.comboQueue.length; i++){
+		if (!this.comboQueue[i].finished)
+			return false;
+	}
+	// All combo have finished. Flush combo queue.
+	this.comboQueue = [];
+	return true;
+};
+
 /** Set hover timeout */
 Renderer.prototype.setHoverTimeout = function(){
 
 	var parent = this;
 
-	if (!this.hoverTimeoutSet){
+	if (this.hoverTimeoutSet == null){
 		
-		window.setTimeout(function(){
+		this.hoverTimeoutSet = window.setTimeout(function(){
 			
 			var pos = parent.board.getHoveringPos();
 			parent.afterHover(pos.y, pos.x);
-			parent.hoverTimeoutSet = false;
+			parent.hoverTimeoutSet = null;
 
 		}, hoverTimeMillis);
-
-		this.hoverTimeoutSet = true;
 	}
 };
 
 /** Renders combo */
 Renderer.prototype.renderHover = function(block, line, col){
-
-	this.hoverBlockElt = this.getBlockElt(line, col);
-
-	if (!this.hoverBlockElt.classList.contains("hover")){
-		switchClass(this.hoverBlockElt, "none", "hover");
+	var block = this.getBlockElt(line, col);
+	if (block != null){
+		this.hoverBlockElt = block;
 	}
 };
 
 /** Action after hover */
 Renderer.prototype.afterHover = function(line, col){
 
-	switchClass(this.hoverBlockElt, "hover", "none");
-
-	this.board.stopHover();
 	if (this.game.isHover()){
+		switchClass(this.hoverBlockElt, "hover", "none");
+		this.board.stopHover();
 		this.game.ready();
 		this.hoverBlockElt = null;
-	} else {
-		debugger
 	}
 };
 
 /** Renders combo */
 Renderer.prototype.renderCombo = function(block, line, col){
 
-	var blockElt = this.getBlockElt(line, col);
-
-	if (!blockElt.classList.contains("combo")){
-		switchClass(blockElt, "none", "combo");
-		
-		// Callback when animation finishes
-		blockElt.addEventListener('webkitTransitionEnd', this.afterCombo(), false);
+	if (this.comboTimeOut == null){
+		var parent = this;
+		this.comboTimeOut = window.setTimeout(function(){
+			parent.board.explodeCombos();
+			parent.comboTimeOut = null;
+		}, comboMillis);
 	}
 };
 
@@ -256,12 +272,13 @@ Renderer.prototype.renderExplode = function(block, line, col){
 
 	var blockElt = this.getBlockElt(line, col);
 
-	if (!blockElt.classList.contains("explode")){
+	if (blockElt != null){
+		if (!blockElt.classList.contains("explode")){
+			switchClass(blockElt, "combo", "explode");
 
-		switchClass(blockElt, "combo", "explode");
-
-		// When animation finishes, delete element from DOM
-		blockElt.addEventListener('webkitTransitionEnd', this.afterExplode(blockElt, line, col), false);
+			// When animation finishes, delete element from DOM
+			blockElt.addEventListener('webkitTransitionEnd', this.afterExplode(blockElt, line, col), false);
+		}
 	}
 };
 
@@ -273,6 +290,30 @@ Renderer.prototype.toFallQueue = function(block, line, col){
 		col: col, 
 		finished: false
 	});
+};
+
+/** Adds an element to the combo queue */
+Renderer.prototype.toComboQueue = function(block, line, col){
+
+	if (this.comboTimeOut == null){
+
+		this.comboQueue.push({
+			line: line, 
+			col: col, 
+			finished: false
+		});
+
+		var blockElt = this.getBlockElt(line, col);
+
+		if (blockElt != null){
+			if (!blockElt.classList.contains("combo")){
+				switchClass(blockElt, "none", "combo");
+				
+				// Callback when animation finishes
+				blockElt.addEventListener('webkitTransitionEnd', this.afterCombo(this.comboQueue.length - 1), false);
+			}
+		}
+	}
 };
 
 /** Renders the fall of blocks in queue */
@@ -288,20 +329,23 @@ Renderer.prototype.renderFall = function(){
 
 			var blockElt = this.getBlockElt(line, col);
 
-			switchClass(blockElt, "none", "fall");
+			if (blockElt != null){
 
-			var gap = line - newLine;
+				switchClass(blockElt, "none", "fall");
+
+				var gap = line - newLine;
 			
-			// Compute new vertical pixel position
-			var newY = getPositionY(blockElt) + (gap*size);
+				// Compute new vertical pixel position
+				var newY = getPositionY(blockElt) + (gap*size);
 
-			// Start animation
-			setPositionY(blockElt, newY);
+				// Start animation
+				setPositionY(blockElt, newY);
 
-			// Update model
-			this.board.moveBlockDown(line, col, newLine);
+				// Update model
+				this.board.moveBlockDown(line, col, newLine);
 			
-			blockElt.addEventListener('webkitTransitionEnd', this.afterFall(i), false);
+				blockElt.addEventListener('webkitTransitionEnd', this.afterFall(i), false);
+			}
 		}
 	}
 };
@@ -309,11 +353,20 @@ Renderer.prototype.renderFall = function(){
 /** Prepares the block to move right */
 Renderer.prototype.moveRight = function(line, col){
 
-	this.swap = true;
+	var rightBlock = this.board.getBlock(line, col+1); 
+	
 	this.moveLine = line;
 	this.moveCol = col;
 
-	if (this.board.getBlock(line, col+1) == null){
+	if (rightBlock != null){
+		if (rightBlock.isMovingLeft()){
+			this.swap = true;
+			
+		}
+	
+	} else {
+		// Handle shifting right: there is no block on the right side.
+		this.swap = true;
 		this.leftFinished = true;
 	}
 };
@@ -321,18 +374,26 @@ Renderer.prototype.moveRight = function(line, col){
 /** Prepares the block to move left */
 Renderer.prototype.moveLeft = function(line, col){
 
-	this.swap = true;
+	var leftBlock = this.board.getBlock(line, col-1);
+
 	this.moveLine = line;
 	this.moveCol = col-1;
 
-	// Handle Shifting Left: because there is no block on the left side
-	if (this.board.getBlock(line, col-1) == null){
+	if (leftBlock != null){
+		if(leftBlock.isMovingRight()){
+			this.swap = true;
+		}	
+	} else {
+		// Handle Shifting Left: because there is no block on the left side.
+		this.swap = true;
 		this.rightFinished = true;
 	}
 };
 
 /** Renders swap */
 Renderer.prototype.renderSwap = function(){
+
+	this.game.swap();
 
 	// Get elements
 	if (!this.rightFinished){
@@ -390,11 +451,6 @@ Renderer.prototype.afterSwap = function(){
 
 	this.board.swap(this.moveLine, this.moveCol);
 
-	// Update game state
-	if (this.game.isSwap()){
-		this.game.ready();
-	}
-
 	// Reset swap variables
 	this.moveLine = null;
 	this.moveCol = null;
@@ -402,6 +458,15 @@ Renderer.prototype.afterSwap = function(){
 	this.rightFinished = false;
 	this.swapLeftElt = null;
 	this.swapRightElt = null;
+
+	// Update game state
+	if (this.game.isSwap()){
+		this.game.ready();
+	} else {
+		if (!this.game.isHover()){
+			console.warn('Wrong state');
+		}
+	}
 };
 
 /** Callback after left move finishes */
@@ -417,16 +482,13 @@ Renderer.prototype.afterRightMove = function(){
 };
 
 /** Callback after fall finishes */
-Renderer.prototype.afterFall = function(fallIndex, line, col, newLine){
+Renderer.prototype.afterFall = function(fallIndex){
 	this.fallQueue[fallIndex].finished = true;
 };
 
 /** Callback after combo finishes */
-Renderer.prototype.afterCombo = function(){
-	var parent = this;
-	window.setTimeout(function(){
-		parent.board.explodeCombos();	
-	}, comboMillis);
+Renderer.prototype.afterCombo = function(comboIndex){
+	this.comboQueue[comboIndex].finished = true;
 };
 
 /** Callback after explosion finishes */
@@ -565,6 +627,7 @@ Renderer.prototype.getBlockElt = function(line, col){
 			}
 		} 
 	}
+	debugger
 	console.error('Block Not found');
 	return null;
 };
