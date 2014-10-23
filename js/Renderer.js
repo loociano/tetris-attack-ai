@@ -52,6 +52,7 @@ function Renderer(game, board, cursor){
 	this.swapRightElt = null;
 	this.swapLeftElt = null;
 
+	this.hoverBlockElt = null;
 	this.hoverTimeoutSet = false;
 
 	this.fallQueue = [];
@@ -148,14 +149,19 @@ Renderer.prototype.rise = function(){
 	this.currOffset += this.offsetRate;
 
 	if (this.currOffset > size){
+		
 		// Lift board one line
 		this.board.lift();
+
+		// Lift cursor model
+		this.cursor.up();
 		// Add a new line
 		this.board.pushNewLine();
 		// Reset offset
 		this.currOffset = this.currOffset - size;
 
 		this.renderNewLine();
+
 	}
 	return success;
 };
@@ -211,27 +217,22 @@ Renderer.prototype.setHoverTimeout = function(){
 /** Renders combo */
 Renderer.prototype.renderHover = function(block, line, col){
 
-	//var position = this.getPositionClass(line, col);
-	//var blockElt = document.getElementsByClassName(position)[0];
-debugger
-	var blockElt = this.getBlockElt(line, col);
+	this.hoverBlockElt = this.getBlockElt(line, col);
 
-	if (!blockElt.classList.contains("hover")){
-		switchClass(blockElt, "none", "hover");
+	if (!this.hoverBlockElt.classList.contains("hover")){
+		switchClass(this.hoverBlockElt, "none", "hover");
 	}
 };
 
 /** Action after hover */
 Renderer.prototype.afterHover = function(line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = document.getElementsByClassName(position)[0];
-
-	switchClass(blockElt, "hover", "none");
+	switchClass(this.hoverBlockElt, "hover", "none");
 
 	this.board.stopHover();
 	if (this.game.isHover()){
 		this.game.ready();
+		this.hoverBlockElt = null;
 	} else {
 		debugger
 	}

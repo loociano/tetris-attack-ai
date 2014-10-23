@@ -57,8 +57,9 @@ function addOffsetY(elt, offset) {
 
 /** Switches css class */
 function switchClass(elt, oldClass, newClass){
-	if (elt.classList.contains(oldClass)) 
+	if (elt.classList.contains(oldClass)){
 		elt.classList.remove(oldClass);
+	}
 	
 	elt.classList.add(newClass);
 };

@@ -21,7 +21,7 @@ function Board(board, width, height){
 
 /** Returns hovering */
 Board.prototype.isHovering = function(){
-	return this.hoverPos.x != null && this.hoverPos != null;
+	return this.hoverPos.x != null && this.hoverPos.y != null;
 };
 
 /** Sets hovering */
