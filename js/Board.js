@@ -12,6 +12,8 @@ function Board(board, width, height){
 	(height == undefined) ? this.height = 10 : this.height = height;
 
 	this.board = [];
+	this.newLine = []; // New line waiting below the board.
+
 	(board == undefined) ? this.generate() : this.board = board;
 
 	this.hoverPos = {x: null, y: null};
@@ -19,7 +21,7 @@ function Board(board, width, height){
 
 /** Returns hovering */
 Board.prototype.isHovering = function(){
-	return this.hoverPos.x != null && this.hoverPos != null;
+	return this.hoverPos.x != null && this.hoverPos.y != null;
 };
 
 /** Sets hovering */
@@ -55,6 +57,11 @@ Board.prototype.getBlock = function(line, col){
 	return this.board[line][col];
 };
 
+/** Returns block from the new line given column */
+Board.prototype.getNewLineBlock = function(col){
+	return this.newLine[col];
+};
+
 /** Sets block given a line and column */
 Board.prototype.setBlock = function(block, line, col){
 	this.board[line][col] = block;
@@ -85,6 +92,14 @@ Board.prototype.swap = function(line, col){
 
 	this.board[line][col] = rightBlock;
 	this.board[line][col+1] = leftBlock;
+};
+
+/** Updates the place of a falling block */
+Board.prototype.moveBlockDown = function(line, col, newLine){
+	var block = this.board[line][col];
+	block.setNone();
+	this.board[line][col] = null;
+	this.board[newLine][col] = block;
 };
 
 /** Returns true if a line contains a given block type */
@@ -188,8 +203,9 @@ Board.prototype.fallCascade = function(explodeLine, explodeCol){
 	for (var line = explodeLine; line < this.height; line++){
 		var block = this.board[line][explodeCol];
 		if (block != null){
-			if (!block.isExploding())
+			if (!block.isExploding()){
 				block.fall();
+			}
 		}
 	}
 };
@@ -213,10 +229,11 @@ Board.prototype.searchHorizontalCombos = function(){
 			if (block != null && !block.isExploding()){
 				if (block.compareType(previousBlock)){
 					count++;
-					if (col < this.width - 1) // Last line handling
+					if (col < this.width - 1) // Continue counting until last block in line
 						continue;
 				}
 			}
+			// Execute during the last column
 			if (count > 2){
 				while(count > 0){
 					var offset = 0;
@@ -287,6 +304,7 @@ Board.prototype.generateEmpty = function(width, height){
 Board.prototype.generate = function(){
 
 	this.generateEmpty();
+	this.generateNewLine();
 
 	// Leave top-line empty
 	for (var line = 0; line < this.height - 1; line++){
@@ -295,8 +313,54 @@ Board.prototype.generate = function(){
 				var block = this.generateBlock(line);
 				if (block != null){
 					this.board[line][col] = block;
-					this.setCorrectType(line, col);
+					//this.setCorrectType(line, col);
 				}
+			}
+		}
+	}
+};
+
+/** Generates a new line */
+Board.prototype.generateNewLine = function(){
+	
+	if (this.newLine.length > 0)
+		this.newLine = [];
+
+	for (var col = 0; col < this.width; col++){
+		var block = new Block();
+		block.disabled();
+		this.newLine.push(block);
+	}
+};
+
+/** Pushes the new line into the board */
+Board.prototype.pushNewLine = function(){
+
+	// Enable new line
+	this.enableNewLine();
+	
+	// Remove first element (bottom row) and add new line
+	this.board.splice(0, 1);
+	this.board.splice(0, 0, this.newLine);
+
+	this.generateNewLine();
+};
+
+/** Enables the blocks in the new line by setting status none */
+Board.prototype.enableNewLine = function(){
+	for (var col = 0; col < this.newLine.length; col++){
+		this.newLine[col].setNone();
+	}
+};
+
+/** Lifts all blocks one place upwards */
+Board.prototype.lift = function(){
+	for (var line = this.height - 1; line >= 0; line--){
+		for (var col = this.width - 1; col >= 0; col--){
+			var block = this.board[line][col];
+			if (block != null){
+				this.board[line+1][col] = block;
+				this.board[line][col] = null;
 			}
 		}
 	}
@@ -378,8 +442,8 @@ Board.prototype.generateBlock = function(line){
 	// Empty block probability: increases linearly with height
 	// Height 0 => probability 0
 	// Height maxHeight + 1 => probability 1
-	var emptyBlockProb = line / (2*this.height);
-
+	var emptyBlockProb = line / (2 * this.height);
+	
 	if (Math.random() > emptyBlockProb)
 		return new Block();
 	else
@@ -393,6 +457,16 @@ Board.prototype.isBlockUnderneath = function(line, col){
 	return this.board[(line-1)][col] != null;
 };
 
+Board.prototype.isBlockUnderneathFalling = function(line, col){
+	if (line == 0) return false;
+	
+	var underneath = this.board[(line-1)][col];
+	
+	if (underneath == null) return false; 
+	
+	return underneath.isFalling();
+};
+
 Board.prototype.isLeftEmpty = function(line, col){
 	if (line == 0 || this.board[(line-1)][col] == null) 
 		return true;
@@ -404,7 +478,8 @@ Board.prototype.isLeftEmpty = function(line, col){
 	given the block coordinates */
 Board.prototype.nextAvailableLine = function(line, col){
 	for (var l = line; l >= 0; l--){
-		if (this.isBlockUnderneath(l, col)) 
+		if (this.isBlockUnderneath(l, col) && !this.isBlockUnderneathFalling(l, col)){
 			return l;
+		}
 	}
 };

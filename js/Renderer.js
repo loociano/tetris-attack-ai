@@ -5,14 +5,26 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
+var hoverTimeMillis = 150; 
+var comboMillis = 1000;
 
-var hoverTimeMillis = 200; 
-var comboMillis = 500; 
+var blockSize = 48;
+var blockBorder = 5;
+var size = blockSize + 2 * blockBorder;
 
 function Renderer(game, board, cursor){
 	this.game = game;
 	this.board = board;
 	this.cursor = cursor;
+
+	// Maximum pixel position 
+	this.maxHeightPx = (this.board.getWidth()-1)*size;
+
+	// Pixel offset rate. Determines how many pixels to rise per cycle
+	this.offsetRate = this.game.speed * this.game.tickMills / 1000;
+
+	// Current offset. To determine when to add a new block line.
+	this.currOffset = 0;
 
 	this.bodyElt = document.body;
 	this.containerElt = document.createElement("div");
@@ -29,24 +41,28 @@ function Renderer(game, board, cursor){
 	this.cursorElt.id = "cursor";
 	this.position = null;
 
+	/** Flag to swap */
+	this.swap = false;
+
 	this.leftFinished = false;
 	this.rightFinished = false;
 	this.moveCol = null;
 	this.moveLine = null;
 
-	this.blockSwapLeft = null;
-	this.blockSwapRight = null;
-
 	this.swapRightElt = null;
 	this.swapLeftElt = null;
 
+	this.hoverBlockElt = null;
 	this.hoverTimeoutSet = false;
+
+	this.fallQueue = [];
 }
 
 /** Renders all elements of the game */
 Renderer.prototype.render = function(){
 	this.renderGrid();
 	this.renderBoard();
+	this.renderDisabledLine();
 	this.renderPoints();
 	this.renderCursor();
 };
@@ -71,68 +87,152 @@ Renderer.prototype.refresh = function(){
 						break;
 
 					case "fall":
-						this.renderFall(block, line, col);
+						this.toFallQueue(block, line, col);
 						break;
 
 					case "right":
-						this.renderRight(block, line, col);
+						this.moveRight(line, col);
 						break;
 
 					case "left":
-						this.renderLeft(block, line, col);
+						this.moveLeft(line, col);
 						break;
 
 					case "hover":
 						this.renderHover(block, line, col);
 						break;
 				}
-
-				// Check if any swap has finished
-				if (this.leftFinished && this.rightFinished){
-					this.afterSwap(line, col);
-				}
-
-				// Check hover
-				if (this.board.isHovering()){
-
-					var parent = this;
-
-					if (!this.hoverTimeoutSet){
-	 					window.setTimeout(function(){
-	 						var pos = parent.board.getHoveringPos();
-	 						parent.afterHover(pos.y, pos.x);
-	 						parent.hoverTimeoutSet = false;
-	 					}, hoverTimeMillis);
-	 					this.hoverTimeoutSet = true;
- 					}
- 				}
 			}
+
+			// Check hover
+			if (this.board.isHovering()){
+				this.setHoverTimeout();
+			}				
 		}
+	}
+	// Handle fall
+	if (this.fallQueue.length > 0){
+		this.renderFall();
+	}
+
+	// Handle swap
+	if (this.swap){
+		this.renderSwap();	
+	}
+
+	// Check if any swap has finished
+	if (this.leftFinished && this.rightFinished){
+		this.afterSwap(line, col);
+	}
+};
+
+/** Rises the blocks */
+Renderer.prototype.rise = function(){
+
+	var success = true;
+
+	// Rise blocks
+	var blockElts = document.getElementsByClassName("block");
+	for (var i = 0; i < blockElts.length; i++){
+		var blockElt = blockElts[i];
+		if (!addOffsetY(blockElt, -this.offsetRate)){
+			success = false;
+		}
+	}
+	// Grow new line
+	this.riseNewLine();
+
+	// Rise cursor
+	addOffsetY(this.cursorElt, -this.offsetRate);
+
+	// Update current offset
+	this.currOffset += this.offsetRate;
+
+	if (this.currOffset > size){
+		
+		// Lift board one line
+		this.board.lift();
+
+		// Lift cursor model
+		this.cursor.up();
+		// Add a new line
+		this.board.pushNewLine();
+		// Reset offset
+		this.currOffset = this.currOffset - size;
+
+		this.renderNewLine();
+
+	}
+	return success;
+};
+
+/** Rises the new line */
+Renderer.prototype.riseNewLine = function(){
+	var blockElts = document.getElementsByClassName("disabled");
+	for (var col = 0; col < blockElts.length; col++){
+		blockElt = blockElts[col];
+		
+		if (this.currOffset >= blockSize){
+			blockElt.style.height = blockSize + "px";
+			blockElt.style.borderBottomWidth = this.currOffset - blockSize + "px";
+		} else {
+			blockElt.style.height = this.currOffset + "px";
+			blockElt.style.borderBottomWidth = 0;
+		}
+		
+	}
+};
+
+/** Returns true if all the falling blocks have finished falling */
+Renderer.prototype.fallFinished = function(){
+
+	for (var i = 0; i < this.fallQueue.length; i++){
+		if (!this.fallQueue[i].finished)
+			return false;
+	}
+	// All falls have finished. Flush fall queue.
+	this.fallQueue = [];
+	return true;
+};
+
+/** Set hover timeout */
+Renderer.prototype.setHoverTimeout = function(){
+
+	var parent = this;
+
+	if (!this.hoverTimeoutSet){
+		
+		window.setTimeout(function(){
+			
+			var pos = parent.board.getHoveringPos();
+			parent.afterHover(pos.y, pos.x);
+			parent.hoverTimeoutSet = false;
+
+		}, hoverTimeMillis);
+
+		this.hoverTimeoutSet = true;
 	}
 };
 
 /** Renders combo */
 Renderer.prototype.renderHover = function(block, line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = document.getElementsByClassName(position)[0];
+	this.hoverBlockElt = this.getBlockElt(line, col);
 
-	if (!blockElt.classList.contains("hover")){
-		this.switchClass(blockElt, "none", "hover");
+	if (!this.hoverBlockElt.classList.contains("hover")){
+		switchClass(this.hoverBlockElt, "none", "hover");
 	}
 };
 
 /** Action after hover */
 Renderer.prototype.afterHover = function(line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = document.getElementsByClassName(position)[0];
-
-	this.switchClass(blockElt, "hover", "none");
+	switchClass(this.hoverBlockElt, "hover", "none");
 
 	this.board.stopHover();
 	if (this.game.isHover()){
 		this.game.ready();
+		this.hoverBlockElt = null;
 	} else {
 		debugger
 	}
@@ -141,11 +241,10 @@ Renderer.prototype.afterHover = function(line, col){
 /** Renders combo */
 Renderer.prototype.renderCombo = function(block, line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = document.getElementsByClassName(position)[0];
+	var blockElt = this.getBlockElt(line, col);
 
 	if (!blockElt.classList.contains("combo")){
-		this.switchClass(blockElt, "none", "combo");
+		switchClass(blockElt, "none", "combo");
 		
 		// Callback when animation finishes
 		blockElt.addEventListener('webkitTransitionEnd', this.afterCombo(), false);
@@ -155,64 +254,74 @@ Renderer.prototype.renderCombo = function(block, line, col){
 /** Renders explode */
 Renderer.prototype.renderExplode = function(block, line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = document.getElementsByClassName(position)[0];
+	var blockElt = this.getBlockElt(line, col);
 
 	if (!blockElt.classList.contains("explode")){
 
-		this.switchClass(blockElt, "combo", "explode");
+		switchClass(blockElt, "combo", "explode");
 
 		// When animation finishes, delete element from DOM
 		blockElt.addEventListener('webkitTransitionEnd', this.afterExplode(blockElt, line, col), false);
 	}
 };
 
-/** Renders fall */
-Renderer.prototype.renderFall = function(block, line, col){
+/** Adds an element to the falling queue */
+Renderer.prototype.toFallQueue = function(block, line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = document.getElementsByClassName(position)[0];
+	this.fallQueue.push({
+		line: line, 
+		col: col, 
+		finished: false
+	});
+};
 
-	if (!blockElt.classList.contains("fall")){
-		
-		var newLine = this.board.nextAvailableLine(line, col);
-		var newPosition = this.getPositionClass(newLine, col);
+/** Renders the fall of blocks in queue */
+Renderer.prototype.renderFall = function(){
 
-		this.switchClass(blockElt, "none", "fall");
-		this.switchClass(blockElt, position, newPosition);
-		blockElt.addEventListener('webkitTransitionEnd', this.afterFall(blockElt, block, line, newLine, col), false);
+	for (var i = 0; i < this.fallQueue.length; i++){
+
+		if (!this.fallQueue[i].finished){
+
+			var line = this.fallQueue[i].line;
+			var col = this.fallQueue[i].col;
+			var newLine = this.board.nextAvailableLine(line, col);
+
+			var blockElt = this.getBlockElt(line, col);
+
+			switchClass(blockElt, "none", "fall");
+
+			var gap = line - newLine;
+			
+			// Compute new vertical pixel position
+			var newY = getPositionY(blockElt) + (gap*size);
+
+			// Start animation
+			setPositionY(blockElt, newY);
+
+			// Update model
+			this.board.moveBlockDown(line, col, newLine);
+			
+			blockElt.addEventListener('webkitTransitionEnd', this.afterFall(i), false);
+		}
 	}
 };
 
-/** Renders right */
-Renderer.prototype.renderRight = function(block, line, col){
+/** Prepares the block to move right */
+Renderer.prototype.moveRight = function(line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = this.getMovingRightElement(position);
+	this.swap = true;
+	this.moveLine = line;
+	this.moveCol = col;
 
-	if (!blockElt.classList.contains("right")){
-		
-		this.blockSwapRight = block;
-		this.moveLine = line;
-		this.moveCol = col;
-
-		// Handle Shifting Right: because there is no block on the right side
-		if (this.board.getBlock(line, col+1) == null){
-			this.leftFinished = true;
-		}
-
-		var newPosition = this.getPositionClass(line, col+1);
-
-		this.switchClass(blockElt, "none", "right");
-		this.switchClass(blockElt, position, newPosition);
-		blockElt.addEventListener('webkitTransitionEnd', this.afterRightMove(blockElt), false);
-	}	
+	if (this.board.getBlock(line, col+1) == null){
+		this.leftFinished = true;
+	}
 };
 
-/** Renders left */
-Renderer.prototype.renderLeft = function(block, line, col){
+/** Prepares the block to move left */
+Renderer.prototype.moveLeft = function(line, col){
 
-	this.blockSwapLeft = block;
+	this.swap = true;
 	this.moveLine = line;
 	this.moveCol = col-1;
 
@@ -220,60 +329,42 @@ Renderer.prototype.renderLeft = function(block, line, col){
 	if (this.board.getBlock(line, col-1) == null){
 		this.rightFinished = true;
 	}
-
-	// Move left					
-	var position = this.getPositionClass(line, col);
-	var newPosition = this.getPositionClass(line, col-1);
-	var blockElt = this.getMovingLeftElement(position);
-
-	this.switchClass(blockElt, "none", "left");
-	this.switchClass(blockElt, position, newPosition);
-
-	blockElt.addEventListener('webkitTransitionEnd', this.afterLeftMove(blockElt), false);
 };
 
-/** Switches css class */
-Renderer.prototype.switchClass = function(elt, oldClass, newClass){
-	elt.classList.remove(oldClass);
-	elt.classList.add(newClass);
-};
+/** Renders swap */
+Renderer.prototype.renderSwap = function(){
 
-/** Returns the block DOM element which is moving right, given a position CSS class */ 
-Renderer.prototype.getMovingRightElement = function(position){
-	
-	var result = null;
-	var blockElts = document.getElementsByClassName(position);
-	for (var i = 0; i < blockElts.length; i++){
-		var blockElt = blockElts[i];
-		// Make sure to skip the cursor
-		if (blockElt.id != "cursor"){
-			result = blockElt;
-		}
+	// Get elements
+	if (!this.rightFinished){
+		this.swapRightElt = this.getBlockElt(this.moveLine, this.moveCol);
 	}
-	this.swapRightElt = result;
-	if (result == null){
-		debugger
-	}
-	return result;
-};
 
-/** Returns the block DOM element which is moving left, given a position css class */
-Renderer.prototype.getMovingLeftElement = function(position){
-
-	var result = null;
-	var blockElts = document.getElementsByClassName(position);
-
-	for (var i = 0; i < blockElts.length; i++){
-		var blockElt = blockElts[i];
-		if (!blockElt.classList.contains("right")){
-			result = blockElt;
-		}
+	if (!this.leftFinished){
+		this.swapLeftElt = this.getBlockElt(this.moveLine, this.moveCol+1);
 	}
-	if (result == null){
-		debugger
+
+	// Swap if existing
+	if (this.swapRightElt != null){
+		// Move right
+		var x = getPositionX(this.swapRightElt);
+		setPositionX(this.swapRightElt, x + size);
+		switchClass(this.swapRightElt, "none", "right");
+
+		// Add listener
+		blockElt.addEventListener('webkitTransitionEnd', this.afterRightMove(), false);
 	}
-	this.swapLeftElt = result;
-	return result;
+
+	if (this.swapLeftElt != null){
+		// Move left					
+		var x = getPositionX(this.swapLeftElt);
+		setPositionX(this.swapLeftElt, x - size);
+		switchClass(this.swapLeftElt, "none", "left");
+
+		// Add listener
+		blockElt.addEventListener('webkitTransitionEnd', this.afterLeftMove(), false);
+	}
+
+	this.swap = false;
 };
 
 /** Updates board after swap finishes */ 
@@ -281,18 +372,18 @@ Renderer.prototype.afterSwap = function(){
 
 	if (this.swapLeftElt != null){
 		if (this.board.isBlockUnderneath(this.moveLine, this.moveCol)){
-			this.switchClass(this.swapLeftElt, "left", "none");
+			switchClass(this.swapLeftElt, "left", "none");
 		} else {
-			this.switchClass(this.swapLeftElt, "left", "hover");
+			switchClass(this.swapLeftElt, "left", "hover");
 			this.game.hover();
 		}
 	}
 	
 	if (this.swapRightElt != null){
 		if (this.board.isBlockUnderneath(this.moveLine, this.moveCol+1)){
-			this.switchClass(this.swapRightElt, "right", "none");
+			switchClass(this.swapRightElt, "right", "none");
 		} else {
-			this.switchClass(this.swapRightElt, "right", "hover");
+			switchClass(this.swapRightElt, "right", "hover");
 			this.game.hover();
 		}
 	}
@@ -301,7 +392,7 @@ Renderer.prototype.afterSwap = function(){
 
 	// Update game state
 	if (this.game.isSwap()){
-		this.game.ready();	
+		this.game.ready();
 	}
 
 	// Reset swap variables
@@ -315,23 +406,19 @@ Renderer.prototype.afterSwap = function(){
 
 /** Callback after left move finishes */
 Renderer.prototype.afterLeftMove = function(blockElt){
+	// Do no remove the "left" class yet, wait the right movement to finish.
 	this.leftFinished = true;
 };
 
 /** Callback after left move finishes */
-Renderer.prototype.afterRightMove = function(blockElt){
-	
+Renderer.prototype.afterRightMove = function(){
 	// Do no remove the "right" class yet, wait the left movement to finish.
 	this.rightFinished = true;
 };
 
 /** Callback after fall finishes */
-Renderer.prototype.afterFall = function(blockElt, block, line, newLine, col){
-	this.board.setBlock(null, line, col);
-	this.board.setBlock(block, newLine, col);
-	blockElt.classList.remove('fall');
-	blockElt.classList.add('none');
-	block.setNone();
+Renderer.prototype.afterFall = function(fallIndex, line, col, newLine){
+	this.fallQueue[fallIndex].finished = true;
 };
 
 /** Callback after combo finishes */
@@ -352,6 +439,17 @@ Renderer.prototype.afterExplode = function(blockElt, line, col){
 	this.updatePoints(this.game.addPoint());
 };
 
+/** Callback after new line becomes available */
+Renderer.prototype.renderNewLine = function(){
+	var blockElts = document.getElementsByClassName("disabled");
+	while (blockElts.length > 0){
+		blockElts[0].style.borderBottomWidth = "0.35em";
+		blockElts[0].style.height = "48px";
+		switchClass(blockElts[0], "disabled", "none");
+	}
+	this.renderDisabledLine();
+};
+
 /** Clears the content */
 Renderer.prototype.clear = function(){
 	var container = document.getElementById("game");
@@ -361,15 +459,22 @@ Renderer.prototype.clear = function(){
 
 /** Renders the grid behind the blocks */
 Renderer.prototype.renderGrid = function(){
-	var size = 3.7;
+	
 	for (var line = this.board.getHeight() - 1; line >= 0; line--){
 		for (var col = 0; col < this.board.getWidth(); col++){
 			var gridElt = document.createElement("div");
 			gridElt.className = "tile empty";
-			gridElt.style.transform = "translate("+(col*size)+"em, "+(line*size)+"em)";
+			this.setPosition(gridElt, line, col);
 			this.boardElt.appendChild(gridElt);
 		}
 	}
+};
+
+/** Sets the position using CSS transform */
+Renderer.prototype.setPosition = function(elt, line, col){
+	var x = col * size;
+	var y = (this.board.getHeight()-1-line) * size;
+	elt.style.transform = "matrix(1, 0, 0, 1, " + x + ", " + y + ")";
 };
 
 /** Renders the points panel */
@@ -382,11 +487,14 @@ Renderer.prototype.renderPoints = function(){
 	pointsContainerElt.appendChild(titleElt);
 	
 	this.pointsElt.innerText = "0";
+	this.pointsElt.classList.add("animated");
+	this.pointsElt.classList.add("bounce");
 	pointsContainerElt.appendChild(this.pointsElt);
 
 	this.containerElt.appendChild(pointsContainerElt);
 };
 
+/** Updates points */
 Renderer.prototype.updatePoints = function(points){
 	this.pointsElt.innerText = points;
 };
@@ -399,7 +507,8 @@ Renderer.prototype.renderBoard = function(){
 			var block = this.board.getBlock(line, col);
 			if (block != null){
 				var blockElt = document.createElement("div");
-				this.setClassNames(blockElt, block, line, col);
+				this.setClassNames(blockElt, block);
+				this.setPosition(blockElt, line, col);
 				this.boardElt.appendChild(blockElt);
 			}
 		}
@@ -408,18 +517,30 @@ Renderer.prototype.renderBoard = function(){
 	this.bodyElt.appendChild(this.containerElt);
 };
 
+/** Renders the new line */
+Renderer.prototype.renderDisabledLine = function(){
+	for (var col = 0; col < this.board.getWidth(); col++){
+		var block = this.board.getNewLineBlock(col);
+
+		var blockElt = document.createElement("div");
+		this.setClassNames(blockElt, block);
+		this.setPosition(blockElt, -1, col);
+		this.boardElt.appendChild(blockElt);
+	}
+};
+
 /** Renders the cursor */
 Renderer.prototype.renderCursor = function(){
 	position = this.cursor.getPosition();
-	this.cursorElt.classList.add(this.getPositionClass(position.y, position.x));
+	this.setPosition(this.cursorElt, position.y, position.x);
 	this.boardElt.appendChild(this.cursorElt);
 };
 
 /** Updates the position of the cursor */
 Renderer.prototype.updateCursor = function(){
-	this.cursorElt.classList.remove(this.getPositionClass(position.y, position.x));
 	position = this.cursor.getPosition();
-	this.cursorElt.classList.add(this.getPositionClass(position.y, position.x));
+	this.setPosition(this.cursorElt, position.y, position.x);
+	addOffsetY(this.cursorElt, -this.currOffset);
 }
 
 /** Returns the position CSS class given a line and col */ 
@@ -427,18 +548,28 @@ Renderer.prototype.getPositionClass = function(line, col){
 	return "position-"+ line + "-" + col;
 }
 
-/** Sets the class names for blocks */
-Renderer.prototype.setClassNames = function(blockElt, block, line, col){
+/** Returns a block DOM element given a line and column */
+Renderer.prototype.getBlockElt = function(line, col){
 
-	blockElt.className = "";
-
-	var classNames = "tile block " + block.getType() + " " + block.getState() + " ";
+	var maxY = ((this.board.getHeight() - 1) - line) * size;
+	var minY = ((this.board.getHeight() - 1) - line - 1) * size;
 	
-	// Handle new position when falling
-	var theLine = line;
-	if (block.isFalling()){
-		theLine = this.board.nextAvailableLine(line,col);
+	var blockElts = document.getElementsByClassName("block");
+	for (var i = 0; i < blockElts.length; i++){
+		var blockElt = blockElts[i];
+		var x = getPositionX(blockElt);
+		if (x == col * size){
+			var y = getPositionY(blockElt);
+			if (y <= maxY && y > minY){
+				return blockElt;
+			}
+		} 
 	}
-	classNames += this.getPositionClass(theLine, col);
-	blockElt.className = classNames;
+	console.error('Block Not found');
+	return null;
+};
+
+/** Sets the class names for blocks */
+Renderer.prototype.setClassNames = function(blockElt, block){
+	blockElt.className = "tile block " + block.getType() + " " + block.getState();
 };
