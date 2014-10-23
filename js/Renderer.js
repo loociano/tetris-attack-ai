@@ -41,13 +41,13 @@ function Renderer(game, board, cursor){
 	this.cursorElt.id = "cursor";
 	this.position = null;
 
+	/** Flag to swap */
+	this.swap = false;
+
 	this.leftFinished = false;
 	this.rightFinished = false;
 	this.moveCol = null;
 	this.moveLine = null;
-
-	this.blockSwapLeft = null;
-	this.blockSwapRight = null;
 
 	this.swapRightElt = null;
 	this.swapLeftElt = null;
@@ -64,6 +64,65 @@ Renderer.prototype.render = function(){
 	this.renderDisabledLine();
 	this.renderPoints();
 	this.renderCursor();
+};
+
+/** Refreshes */
+Renderer.prototype.refresh = function(){
+
+	for (var line = 0; line < this.board.getHeight(); line++){
+		for (var col = 0; col < this.board.getWidth(); col++){	
+			var block = this.board.getBlock(line, col);
+			
+			if (block != null){
+
+				switch(block.getState()){
+
+					case "combo":
+						this.renderCombo(block, line, col);
+						break;
+
+					case "explode":
+						this.renderExplode(block, line, col);
+						break;
+
+					case "fall":
+						this.toFallQueue(block, line, col);
+						break;
+
+					case "right":
+						this.moveRight(line, col);
+						break;
+
+					case "left":
+						this.moveLeft(line, col);
+						break;
+
+					case "hover":
+						this.renderHover(block, line, col);
+						break;
+				}
+			}
+
+			// Check hover
+			if (this.board.isHovering()){
+				this.setHoverTimeout();
+			}				
+		}
+	}
+	// Handle fall
+	if (this.fallQueue.length > 0){
+		this.renderFall();
+	}
+
+	// Handle swap
+	if (this.swap){
+		this.renderSwap();	
+	}
+
+	// Check if any swap has finished
+	if (this.leftFinished && this.rightFinished){
+		this.afterSwap(line, col);
+	}
 };
 
 /** Rises the blocks */
@@ -118,60 +177,6 @@ Renderer.prototype.riseNewLine = function(){
 	}
 };
 
-/** Refreshes */
-Renderer.prototype.refresh = function(){
-
-	for (var line = 0; line < this.board.getHeight(); line++){
-		for (var col = 0; col < this.board.getWidth(); col++){	
-			var block = this.board.getBlock(line, col);
-			
-			if (block != null){
-
-				switch(block.getState()){
-
-					case "combo":
-						this.renderCombo(block, line, col);
-						break;
-
-					case "explode":
-						this.renderExplode(block, line, col);
-						break;
-
-					case "fall":
-						this.toFallQueue(block, line, col);
-						break;
-
-					case "right":
-						this.renderRight(block, line, col);
-						break;
-
-					case "left":
-						this.renderLeft(block, line, col);
-						break;
-
-					case "hover":
-						this.renderHover(block, line, col);
-						break;
-				}
-			}
-
-			// Check if any swap has finished
-			if (this.leftFinished && this.rightFinished){
-				this.afterSwap(line, col);
-			}
-
-			// Check hover
-			if (this.board.isHovering()){
-				this.setHoverTimeout();
-			}				
-		}
-	}
-	// Handle fall
-	if (this.fallQueue.length > 0){
-		this.renderFall();
-	}
-};
-
 /** Returns true if all the falling blocks have finished falling */
 Renderer.prototype.fallFinished = function(){
 
@@ -206,11 +211,13 @@ Renderer.prototype.setHoverTimeout = function(){
 /** Renders combo */
 Renderer.prototype.renderHover = function(block, line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = document.getElementsByClassName(position)[0];
+	//var position = this.getPositionClass(line, col);
+	//var blockElt = document.getElementsByClassName(position)[0];
+debugger
+	var blockElt = this.getBlockElt(line, col);
 
 	if (!blockElt.classList.contains("hover")){
-		this.switchClass(blockElt, "none", "hover");
+		switchClass(blockElt, "none", "hover");
 	}
 };
 
@@ -220,7 +227,7 @@ Renderer.prototype.afterHover = function(line, col){
 	var position = this.getPositionClass(line, col);
 	var blockElt = document.getElementsByClassName(position)[0];
 
-	this.switchClass(blockElt, "hover", "none");
+	switchClass(blockElt, "hover", "none");
 
 	this.board.stopHover();
 	if (this.game.isHover()){
@@ -236,7 +243,7 @@ Renderer.prototype.renderCombo = function(block, line, col){
 	var blockElt = this.getBlockElt(line, col);
 
 	if (!blockElt.classList.contains("combo")){
-		this.switchClass(blockElt, "none", "combo");
+		switchClass(blockElt, "none", "combo");
 		
 		// Callback when animation finishes
 		blockElt.addEventListener('webkitTransitionEnd', this.afterCombo(), false);
@@ -250,7 +257,7 @@ Renderer.prototype.renderExplode = function(block, line, col){
 
 	if (!blockElt.classList.contains("explode")){
 
-		this.switchClass(blockElt, "combo", "explode");
+		switchClass(blockElt, "combo", "explode");
 
 		// When animation finishes, delete element from DOM
 		blockElt.addEventListener('webkitTransitionEnd', this.afterExplode(blockElt, line, col), false);
@@ -280,7 +287,7 @@ Renderer.prototype.renderFall = function(){
 
 			var blockElt = this.getBlockElt(line, col);
 
-			this.switchClass(blockElt, "none", "fall");
+			switchClass(blockElt, "none", "fall");
 
 			var gap = line - newLine;
 			
@@ -298,35 +305,22 @@ Renderer.prototype.renderFall = function(){
 	}
 };
 
-/** Renders right */
-Renderer.prototype.renderRight = function(block, line, col){
+/** Prepares the block to move right */
+Renderer.prototype.moveRight = function(line, col){
 
-	var position = this.getPositionClass(line, col);
-	var blockElt = this.getMovingRightElement(position);
+	this.swap = true;
+	this.moveLine = line;
+	this.moveCol = col;
 
-	if (!blockElt.classList.contains("right")){
-		
-		this.blockSwapRight = block;
-		this.moveLine = line;
-		this.moveCol = col;
-
-		// Handle Shifting Right: because there is no block on the right side
-		if (this.board.getBlock(line, col+1) == null){
-			this.leftFinished = true;
-		}
-
-		var newPosition = this.getPositionClass(line, col+1);
-
-		this.switchClass(blockElt, "none", "right");
-		this.switchClass(blockElt, position, newPosition);
-		blockElt.addEventListener('webkitTransitionEnd', this.afterRightMove(blockElt), false);
-	}	
+	if (this.board.getBlock(line, col+1) == null){
+		this.leftFinished = true;
+	}
 };
 
-/** Renders left */
-Renderer.prototype.renderLeft = function(block, line, col){
+/** Prepares the block to move left */
+Renderer.prototype.moveLeft = function(line, col){
 
-	this.blockSwapLeft = block;
+	this.swap = true;
 	this.moveLine = line;
 	this.moveCol = col-1;
 
@@ -334,62 +328,42 @@ Renderer.prototype.renderLeft = function(block, line, col){
 	if (this.board.getBlock(line, col-1) == null){
 		this.rightFinished = true;
 	}
-
-	// Move left					
-	var position = this.getPositionClass(line, col);
-	var newPosition = this.getPositionClass(line, col-1);
-	var blockElt = this.getMovingLeftElement(position);
-
-	this.switchClass(blockElt, "none", "left");
-	this.switchClass(blockElt, position, newPosition);
-
-	blockElt.addEventListener('webkitTransitionEnd', this.afterLeftMove(blockElt), false);
 };
 
-/** Switches css class */
-Renderer.prototype.switchClass = function(elt, oldClass, newClass){
-	if (elt.classList.contains(oldClass)) 
-		elt.classList.remove(oldClass);
-	
-	elt.classList.add(newClass);
-};
+/** Renders swap */
+Renderer.prototype.renderSwap = function(){
 
-/** Returns the block DOM element which is moving right, given a position CSS class */ 
-Renderer.prototype.getMovingRightElement = function(position){
-	
-	var result = null;
-	var blockElts = document.getElementsByClassName(position);
-	for (var i = 0; i < blockElts.length; i++){
-		var blockElt = blockElts[i];
-		// Make sure to skip the cursor
-		if (blockElt.id != "cursor"){
-			result = blockElt;
-		}
+	// Get elements
+	if (!this.rightFinished){
+		this.swapRightElt = this.getBlockElt(this.moveLine, this.moveCol);
 	}
-	this.swapRightElt = result;
-	if (result == null){
-		debugger
-	}
-	return result;
-};
 
-/** Returns the block DOM element which is moving left, given a position css class */
-Renderer.prototype.getMovingLeftElement = function(position){
-
-	var result = null;
-	var blockElts = document.getElementsByClassName(position);
-
-	for (var i = 0; i < blockElts.length; i++){
-		var blockElt = blockElts[i];
-		if (!blockElt.classList.contains("right")){
-			result = blockElt;
-		}
+	if (!this.leftFinished){
+		this.swapLeftElt = this.getBlockElt(this.moveLine, this.moveCol+1);
 	}
-	if (result == null){
-		debugger
+
+	// Swap if existing
+	if (this.swapRightElt != null){
+		// Move right
+		var x = getPositionX(this.swapRightElt);
+		setPositionX(this.swapRightElt, x + size);
+		switchClass(this.swapRightElt, "none", "right");
+
+		// Add listener
+		blockElt.addEventListener('webkitTransitionEnd', this.afterRightMove(), false);
 	}
-	this.swapLeftElt = result;
-	return result;
+
+	if (this.swapLeftElt != null){
+		// Move left					
+		var x = getPositionX(this.swapLeftElt);
+		setPositionX(this.swapLeftElt, x - size);
+		switchClass(this.swapLeftElt, "none", "left");
+
+		// Add listener
+		blockElt.addEventListener('webkitTransitionEnd', this.afterLeftMove(), false);
+	}
+
+	this.swap = false;
 };
 
 /** Updates board after swap finishes */ 
@@ -397,18 +371,18 @@ Renderer.prototype.afterSwap = function(){
 
 	if (this.swapLeftElt != null){
 		if (this.board.isBlockUnderneath(this.moveLine, this.moveCol)){
-			this.switchClass(this.swapLeftElt, "left", "none");
+			switchClass(this.swapLeftElt, "left", "none");
 		} else {
-			this.switchClass(this.swapLeftElt, "left", "hover");
+			switchClass(this.swapLeftElt, "left", "hover");
 			this.game.hover();
 		}
 	}
 	
 	if (this.swapRightElt != null){
 		if (this.board.isBlockUnderneath(this.moveLine, this.moveCol+1)){
-			this.switchClass(this.swapRightElt, "right", "none");
+			switchClass(this.swapRightElt, "right", "none");
 		} else {
-			this.switchClass(this.swapRightElt, "right", "hover");
+			switchClass(this.swapRightElt, "right", "hover");
 			this.game.hover();
 		}
 	}
@@ -417,7 +391,7 @@ Renderer.prototype.afterSwap = function(){
 
 	// Update game state
 	if (this.game.isSwap()){
-		this.game.ready();	
+		this.game.ready();
 	}
 
 	// Reset swap variables
@@ -436,8 +410,7 @@ Renderer.prototype.afterLeftMove = function(blockElt){
 };
 
 /** Callback after left move finishes */
-Renderer.prototype.afterRightMove = function(blockElt){
-	
+Renderer.prototype.afterRightMove = function(){
 	// Do no remove the "right" class yet, wait the left movement to finish.
 	this.rightFinished = true;
 };
@@ -471,7 +444,7 @@ Renderer.prototype.renderNewLine = function(){
 	while (blockElts.length > 0){
 		blockElts[0].style.borderBottomWidth = "0.35em";
 		blockElts[0].style.height = "48px";
-		this.switchClass(blockElts[0], "disabled", "none");
+		switchClass(blockElts[0], "disabled", "none");
 	}
 	this.renderDisabledLine();
 };
@@ -513,11 +486,14 @@ Renderer.prototype.renderPoints = function(){
 	pointsContainerElt.appendChild(titleElt);
 	
 	this.pointsElt.innerText = "0";
+	this.pointsElt.classList.add("animated");
+	this.pointsElt.classList.add("bounce");
 	pointsContainerElt.appendChild(this.pointsElt);
 
 	this.containerElt.appendChild(pointsContainerElt);
 };
 
+/** Updates points */
 Renderer.prototype.updatePoints = function(points){
 	this.pointsElt.innerText = points;
 };

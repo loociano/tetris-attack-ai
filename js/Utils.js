@@ -54,3 +54,11 @@ function addOffsetY(elt, offset) {
 		return true;
 	}
 };
+
+/** Switches css class */
+function switchClass(elt, oldClass, newClass){
+	if (elt.classList.contains(oldClass)) 
+		elt.classList.remove(oldClass);
+	
+	elt.classList.add(newClass);
+};
