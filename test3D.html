@@ -30,6 +30,7 @@
   height: 58px;
   border: 1px solid black;
   background-color: white;
+  border-radius: 5px;
 }
 
 figure.red {
@@ -75,12 +76,36 @@ figure.purple {
 
   var board = document.getElementById("board");
   var width = 6;
+  var hWidth = 3
   var height = 10;
+  var hHeight = 5;
 
   var colours = ["red", "blue", "yellow", "purple", "silver", "green"];
 
-  for (var i = 0; i < height; i++){
-    for (var j = 0; j < width; j++){
+  // Top half
+  for (var i = 0; i < hHeight; i++){
+    
+    // Left part (1:1)
+    for (var j = 0; j < hWidth; j++){
+      board.appendChild(new Block3D(i, j, colours[randomInt(0, colours.length)]).getElt());
+    }
+
+    // Right part (1:2)
+    for (var j = width - 1; j >= hWidth; j--){
+      board.appendChild(new Block3D(i, j, colours[randomInt(0, colours.length)]).getElt());
+    }
+  }
+
+  // Bottom half
+  for (var i = height - 1; i >= hHeight; i--){
+    
+    // Left part (2:1)
+    for (var j = 0; j < hWidth; j++){
+      board.appendChild(new Block3D(i, j, colours[randomInt(0, colours.length)]).getElt());
+    }
+
+    // Right part (2:2)
+    for (var j = width - 1; j >= hWidth; j--){
       board.appendChild(new Block3D(i, j, colours[randomInt(0, colours.length)]).getElt());
     }
   }
