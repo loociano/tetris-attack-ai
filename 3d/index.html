@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<!-- saved from url=(0071)http://desandro.github.io/3dtransforms/examples/cube-02-show-sides.html -->
+<html lang="en" class=" js csstransforms3d">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+  
+    <title>Cube 2 - show sides · Intro to CSS 3D transforms › Examples</title>
+
+    <style media="screen">
+
+    figure {
+      margin: 0;
+    }
+
+    .container {
+      width: 200px;
+      height: 200px;
+      position: relative;
+      margin: 0 auto 40px;
+      border: 1px solid #CCC;
+      perspective: 750px;
+    }
+
+    .cube {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      transform-style: preserve-3d;
+      transition: transform 1s;
+    }
+
+    .cube figure {
+      display: block;
+      position: absolute;
+      width: 196px;
+      height: 196px;
+      border: hsla(0, 100%, 50%, 0.8);
+      line-height: 196px;
+      font-size: 120px;
+      font-weight: bold;
+      color: white;
+      text-align: center;
+    }
+
+    .cube .front  { background: hsla(   0, 100%, 50%, 0.5 ); }
+    .cube .back   { background: hsla(   0, 100%, 50%, 0.5 ); }
+    .cube .right  { background: hsla(   0, 100%, 50%, 0.5 ); }
+    .cube .left   { background: hsla(   0, 100%, 50%, 0.5 ); }
+    .cube .top    { background: hsla(   0, 100%, 50%, 0.5 ); }
+    .cube .bottom { background: hsla(   0, 100%, 50%, 0.5 ); }
+
+    .cube .front  {
+      transform: translateZ( 100px );
+    }
+    .cube .back   {
+      transform: rotateX( -180deg ) translateZ( 100px );
+    }
+    .cube .right {
+      transform: rotateY(   90deg ) translateZ( 100px );
+    }
+    .cube .left {
+      transform: rotateY(  -90deg ) translateZ( 100px ) ;
+    }
+    .cube .top {
+      transform: rotateX(   90deg ) translateZ( 100px );
+    }
+    .cube .bottom {
+      transform: rotateX(  -90deg ) translateZ( 100px );
+    }
+
+    .cube2 .front  {
+      transform: translateX(205px) translateZ( 100px );
+    }
+    .cube2 .back   {
+      transform: translateX(205px) rotateX( -180deg ) translateZ( 100px );
+    }
+    .cube2 .right {
+      transform: translateX(205px) rotateY(   90deg ) translateZ( 100px );
+    }
+    .cube2 .left {
+      transform: translateX(205px) rotateY(  -90deg ) translateZ( 100px ) ;
+    }
+    .cube2 .top {
+      transform: translateX(205px) rotateX(   90deg ) translateZ( 100px );
+    }
+    .cube2 .bottom {
+      transform: translateX(205px) rotateX(  -90deg ) translateZ( 100px );
+    }
+
+    .cube3 .front  {
+      transform: translateX(-200px) translateZ( 100px );
+    }
+    .cube3 .back   {
+      transform: translateX(-200px) rotateX( -180deg ) translateZ( 100px );
+    }
+    .cube3 .right {
+      transform: translateX(-200px) rotateY(   90deg ) translateZ( 100px );
+    }
+    .cube3 .left {
+      transform: translateX(-200px) rotateY(  -90deg ) translateZ( 100px ) ;
+    }
+    .cube3 .top {
+      transform: translateX(-200px) rotateX(   90deg ) translateZ( 100px );
+    }
+    .cube3 .bottom {
+      transform: translateX(-200px) rotateX(  -90deg ) translateZ( 100px );
+    }
+
+  </style>
+
+</head>
+<body>
+
+  <section class="container">
+
+    <div class="cube cube3">
+      <figure class="front"></figure>
+      <figure class="back"></figure>
+      <figure class="right"></figure>
+      <figure class="left"></figure>
+      <figure class="top"></figure>
+      <figure class="bottom"></figure>
+    </div>
+
+    <div class="cube cube2">
+      <figure class="front"></figure>
+      <figure class="back"></figure>
+      <figure class="right"></figure>
+      <figure class="left"></figure>
+      <figure class="top"></figure>
+      <figure class="bottom"></figure>
+    </div>
+
+    <div class="cube">
+      <figure class="front"></figure>
+      <figure class="back"></figure>
+      <figure class="right"></figure>
+      <figure class="left"></figure>
+      <figure class="top"></figure>
+      <figure class="bottom"></figure>
+    </div>
+    
+  </section>
+
+</body>
+</html>
