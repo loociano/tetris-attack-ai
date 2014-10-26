@@ -236,7 +236,7 @@ Board.prototype.searchHorizontalCombos = function(){
 
 		for (var col = 0; col < this.width; col++){
 			var block = this.board[line][col];
-			if (block != null && !block.isExploding()){
+			if (block != null && block.isNone()){
 				if (block.compareType(previousBlock)){
 					count++;
 					if (col < this.width - 1) // Continue counting until last block in line
@@ -273,7 +273,7 @@ Board.prototype.searchVerticalCombos = function(){
 
 		for (var line = 0; line < this.height; line++){
 			var block = this.board[line][col];
-			if (block != null && !block.isExploding()){
+			if (block != null && block.isNone()){
 				if (block.compareType(previousBlock)){
 					count++;
 					if (line < this.height - 1) // Last line handling

@@ -46,18 +46,35 @@
  	var isSwapping = false;
  	
  	var leftBlock = this.board.getBlock(this.y, this.x);
+ 	var rightBlock = this.board.getBlock(this.y, this.x+1);
+
  	if (leftBlock != null) {
  		if (leftBlock.isNone()){
- 			leftBlock.right();
- 			isSwapping = true;
+ 			if (rightBlock != null){
+ 				if (rightBlock.isNone()){
+ 					leftBlock.right();
+ 					rightBlock.left();
+ 					isSwapping = true;
+ 				} else{
+ 					console.info('Cannot swap this pair');
+ 				}	
+ 			} else {
+ 				leftBlock.right();
+ 				isSwapping = true;
+ 			}
+ 		} else {
+ 			console.info('Cannot swap: block is: '+ leftBlock.getState());
  		}
- 	}
-
- 	var rightBlock = this.board.getBlock(this.y, this.x+1);
- 	if (rightBlock != null){
- 		if (rightBlock.isNone()){
- 			rightBlock.left();	
- 			isSwapping = true;
+ 	} else {
+ 		if (rightBlock != null){
+ 			if (rightBlock.isNone()){
+ 				rightBlock.left();	
+ 				isSwapping = true;
+ 			} else {
+ 				console.info('Cannot swap: block is: '+ leftBlock.getState());
+ 			}
+ 		} else {
+ 			console.info('empty pair');
  		}
  	}
  	return isSwapping;

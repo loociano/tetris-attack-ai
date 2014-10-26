@@ -120,7 +120,6 @@ Renderer.prototype.refresh = function(){
 
 	// Handle combo
 	if (this.comboQueue.length > 0){
-		this.game.combo();
 		this.renderCombo();
 
 		if (this.queueFinished(this.comboQueue)){
@@ -137,7 +136,6 @@ Renderer.prototype.refresh = function(){
 
 	if (this.explodeQueue.length > 0){
 		if (this.queueFinished(this.explodeQueue)){
-			this.game.ready();
 			this.explodeQueue = [];	
 		}
 	}
@@ -193,6 +191,7 @@ Renderer.prototype.rise = function(){
 			
 			// Add a new line
 			this.board.pushNewLine();
+
 			// Reset offset
 			this.currOffset = this.currOffset - size;
 
@@ -203,7 +202,7 @@ Renderer.prototype.rise = function(){
 	return success;
 };
 
-/** Rises the new line */
+/** Rises the new line the rate offset in pixels */
 Renderer.prototype.riseNewLine = function(){
 	var blockElts = document.getElementsByClassName("disabled");
 	for (var col = 0; col < blockElts.length; col++){
@@ -239,7 +238,6 @@ Renderer.prototype.setHoverTimeout = function(){
 			
 			var pos = parent.board.getHoveringPos();
 			parent.afterHover(pos.y, pos.x);
-			parent.hoverTimeoutSet = null;
 
 		}, hoverTimeMillis);
 	}
@@ -261,6 +259,9 @@ Renderer.prototype.afterHover = function(line, col){
 		this.board.stopHover();
 		this.game.ready();
 		this.hoverBlockElt = null;
+		this.hoverTimeoutSet = null;
+	} else {
+		console.warn('Wrong hover state: ' + this.game.getState());
 	}
 };
 
@@ -378,9 +379,10 @@ Renderer.prototype.moveRight = function(line, col){
 	if (rightBlock != null){
 		if (rightBlock.isMovingLeft()){
 			this.swap = true;
-			
+		} else {
+			console.info('Right block cannot move');
+			this.swap = false;
 		}
-	
 	} else {
 		// Handle shifting right: there is no block on the right side.
 		this.swap = true;
@@ -399,7 +401,10 @@ Renderer.prototype.moveLeft = function(line, col){
 	if (leftBlock != null){
 		if(leftBlock.isMovingRight()){
 			this.swap = true;
-		}	
+		} else {
+			console.info('Left block cannot move');
+			this.swap = false;
+		}
 	} else {
 		// Handle Shifting Left: because there is no block on the left side.
 		this.swap = true;
@@ -439,7 +444,6 @@ Renderer.prototype.renderSwap = function(){
 		// Add listener
 		blockElt.addEventListener('webkitTransitionEnd', this.afterLeftMove(), false);
 	}
-
 	this.swap = false;
 };
 
@@ -479,7 +483,7 @@ Renderer.prototype.afterSwap = function(){
 		this.game.ready();
 	} else {
 		if (!this.game.isHover()){
-			console.warn('Wrong state');
+			console.warn('Wrong swap state: ' + this.game.getState());
 		}
 	}
 };
@@ -642,13 +646,13 @@ Renderer.prototype.getBlockElt = function(line, col){
 		var x = getPositionX(blockElt);
 		if (x == col * size){
 			var y = getPositionY(blockElt);
-			if (y <= maxY && y > minY){
+			if (y <= maxY && y >= minY){
 				return blockElt;
 			}
 		} 
 	}
-	debugger
 	console.error('Block Not found');
+	debugger
 	return null;
 };
 

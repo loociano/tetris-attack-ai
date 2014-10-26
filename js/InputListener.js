@@ -74,7 +74,6 @@ InputListener.prototype.act = function(key){
 			break;
 
 		case "back":
-			alert("back");
 			break;
 	}
 };
@@ -111,9 +110,8 @@ InputListener.prototype.down = function(){
 /** Action on swap */
 InputListener.prototype.swap = function(){
 	if (!this.game.isSwap() && !this.game.isHover()){
-		if (this.cursor.swap()){
-			this.game.swap();
-		} else {
+		this.game.swap();
+		if (!this.cursor.swap()){
 			this.game.ready();
 		}
 	} else {
