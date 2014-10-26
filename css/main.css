@@ -175,7 +175,7 @@ div.line {
 .block.disabled {
 	border-bottom-width: 0;
 	height: 0;
-	position: fixed;
+	position: absolute;
 	box-shadow: none;
 }
 

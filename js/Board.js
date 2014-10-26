@@ -323,7 +323,7 @@ Board.prototype.generate = function(){
 				var block = this.generateBlock(line);
 				if (block != null){
 					this.board[line][col] = block;
-					//this.setCorrectType(line, col);
+					this.setCorrectType(line, col);
 				}
 			}
 		}
@@ -337,7 +337,18 @@ Board.prototype.generateNewLine = function(){
 		this.newLine = [];
 
 	for (var col = 0; col < this.width; col++){
+		
 		var block = new Block();
+		var type = block.getType();
+
+		var forbiddenTypes = [];
+		if (col > 1){
+			if (this.newLine[col-2].getType() == type && this.newLine[col-1].getType() == type){
+				// Avoid combo on new line
+				forbiddenTypes.push(type);
+				block.setDistinctRandomType(forbiddenTypes);
+			}
+		}
 		block.disabled();
 		this.newLine.push(block);
 	}
