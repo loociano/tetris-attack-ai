@@ -5,13 +5,19 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
-var hoverTimeMillis = 100; 
+
+// Time a blocks hovers before falling
+var hoverTimeMillis = 1000; 
+
+// Time combos wait to explode
 var comboMillis = 1000;
 
+// Block Pixel sizes
 var blockSize = 48;
 var blockBorder = 5;
 var size = blockSize + 2 * blockBorder;
 
+/** Constructor */
 function Renderer(game, board, cursor){
 	this.game = game;
 	this.board = board;
@@ -49,15 +55,18 @@ function Renderer(game, board, cursor){
 	this.moveCol = null;
 	this.moveLine = null;
 
+	// Swap block pointers
 	this.swapRightElt = null;
 	this.swapLeftElt = null;
 
+	// Hover block pointer
 	this.hoverBlockElt = null;
 
 	// Timeout identifiers
 	this.hoverTimeoutSet = null;
 	this.comboTimeOut = null;
 
+	// Queues
 	this.comboQueue = [];
 	this.explodeQueue = [];
 	this.fallQueue = [];
@@ -158,8 +167,32 @@ Renderer.prototype.refresh = function(){
 	}
 };
 
-/** Rises the blocks */
-Renderer.prototype.rise = function(){
+/** Renders game over */
+Renderer.prototype.renderGameOver = function(){
+	
+	var blockElts = document.getElementsByClassName("block");
+
+	// Delete all blocks and cursor
+	while(blockElts.length > 0){
+		blockElts[0].remove();
+	}
+	this.cursorElt.remove();
+
+	var gameoverElt = document.createElement("div");
+	gameoverElt.innerText = "Game Over";
+	gameoverElt.id = "game-over";
+	this.boardElt.appendChild(gameoverElt);
+};
+
+/** 
+ * Rises the blocks 
+ * @param amount (optional)
+ */
+Renderer.prototype.rise = function(amount){
+
+	var offset = this.offsetRate;
+	if (amount != null) 
+		offset += amount;
 
 	var success = true;
 
@@ -168,18 +201,19 @@ Renderer.prototype.rise = function(){
 		var blockElts = document.getElementsByClassName("block");
 		for (var i = 0; i < blockElts.length; i++){
 			var blockElt = blockElts[i];
-			if (!addOffsetY(blockElt, -this.offsetRate)){
+			if (!addOffsetY(blockElt, -offset)){
 				success = false;
 			}
 		}
+
 		// Grow new line
 		this.riseNewLine();
 
 		// Rise cursor
-		addOffsetY(this.cursorElt, -this.offsetRate);
+		addOffsetY(this.cursorElt, -offset);
 
 		// Update current offset
-		this.currOffset += this.offsetRate;
+		this.currOffset += offset;
 
 		if (this.currOffset > size){
 			

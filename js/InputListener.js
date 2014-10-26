@@ -7,10 +7,10 @@
 function InputListener(game, cursor, renderer){
 
 	this.map = {
-		13: "hit", // Enter
+		13: "start", // Enter
 		17: "swap", // Left Ctrl
 		27: "back", // Scape
-		32: "swap", // Space bar
+		32: "rise", // Space bar
 		37: "left",
 		38: "up",
 		39: "right",
@@ -69,8 +69,12 @@ InputListener.prototype.act = function(key){
 			this.swap();
 			break;
 
-		case "hit":
+		case "start":
 			this.hit();
+			break;
+
+		case "rise":
+			this.rise();
 			break;
 
 		case "back":
@@ -117,4 +121,9 @@ InputListener.prototype.swap = function(){
 	} else {
 		console.info('Cant swap now: ' + this.game.getState());
 	}
+};
+
+/** Action on rise all blocks */
+InputListener.prototype.rise = function(){
+	this.renderer.rise(5);
 };

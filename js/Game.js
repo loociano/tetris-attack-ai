@@ -5,7 +5,7 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
-var states = ["ready", "swap", "hover", "combo"];
+var states = ["ready", "swap", "hover", "combo", "gameover"];
 
 /** Game constructor */
  function Game(board){
@@ -25,6 +25,14 @@ var states = ["ready", "swap", "hover", "combo"];
  Game.prototype.addPoint = function(points){
  	(points == undefined) ? this.points++ : this.points += points;
  	return this.points;
+ };
+
+ Game.prototype.setGameOver = function(){
+ 	this.state = "gameover";
+ };
+
+ Game.prototype.isGameOver = function(){
+ 	return this.state == "gameover";
  };
 
 /** Returns true if game is in swap */
@@ -62,8 +70,10 @@ var states = ["ready", "swap", "hover", "combo"];
 
 /** Sets game ready */
  Game.prototype.ready = function(){
- 	console.log("ready");
- 	return this.state = "ready";
+ 	if (!this.isGameOver()){
+ 		console.log("ready");
+ 		this.state = "ready";
+ 	}
  };
 
 /** Returns true if game is ready */
@@ -71,6 +81,7 @@ var states = ["ready", "swap", "hover", "combo"];
  	return this.state == "ready";
  };
 
+/** Returns game state */
  Game.prototype.getState = function(){
  	return this.state;
  };
@@ -103,6 +114,8 @@ var states = ["ready", "swap", "hover", "combo"];
 /** Game over */
  Game.prototype.onGameOver = function(){
  	window.clearInterval(this.id);
+ 	this.setGameOver();
+ 	this.renderer.renderGameOver();
  };
 
 /** Restarts game */

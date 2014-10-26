@@ -5,6 +5,18 @@ body {
 	background: #ddd;
 }
 
+#game-over {
+	color: rgb(48, 48, 48);
+	position: relative;
+	z-index: 3;
+	font-size: 30px;
+	font-family: Verdana;
+	margin: auto auto;
+	width: 183px;
+	top: 127px;
+	text-transform: uppercase;
+}
+
 #points {
 	transform: translate(22em, 0em);
 	width: 9em;
