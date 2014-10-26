@@ -4,46 +4,34 @@ function Block3D(line, col, colour){
 	this.size = 58;
 	this.offsetX = col * this.size;
 	this.offsetY = line * this.size;
+	this.offsetZ = this.size / 2;
 
 	this.cubeElt = document.createElement("div");
 	this.cubeElt.className = "cube";
 	
 	this.frElt = document.createElement("figure");
 	this.frElt.className = "front " + colour;
-	this.moveZ(this.frElt, this.size/2);
-	this.moveX(this.frElt, this.offsetX);
-	this.moveY(this.frElt, this.offsetY);
+	this.setFront(this.frElt);
 
 	this.bkElt = document.createElement("figure");
 	this.bkElt.className = "back " + colour;
-	this.rotateX(this.bkElt, -180);
-	this.moveZ(this.bkElt, this.size/2);
-	this.moveX(this.bkElt, this.offsetX);
-	this.moveY(this.bkElt, -this.offsetY);
+	this.setBack(this.bkElt);
 
 	this.rgElt = document.createElement("figure");
 	this.rgElt.className = "right " + colour;
-	this.rotateY(this.rgElt, 90);
-	this.moveZ(this.rgElt, this.offsetX + this.size/2);
-	this.moveY(this.rgElt, this.offsetY);
+	this.setRight(this.rgElt);
 
 	this.lfElt = document.createElement("figure");
 	this.lfElt.className = "left " + colour;
-	this.rotateY(this.lfElt, -90);
-	this.moveZ(this.lfElt, this.size/2 - this.offsetX);
-	this.moveY(this.lfElt, this.offsetY);
+	this.setLeft(this.lfElt);
 
 	this.tpElt = document.createElement("figure");
 	this.tpElt.className = "top " + colour;
-	this.rotateX(this.tpElt, 90);
-	this.moveZ(this.tpElt, this.size/2 - this.offsetY);
-	this.moveX(this.tpElt, this.offsetX);
+	this.setTop(this.tpElt);
 
 	this.btElt = document.createElement("figure");
 	this.btElt.className = "bottom " + colour;
-	this.rotateX(this.btElt, -90);
-	this.moveZ(this.btElt, this.offsetY + this.size/2);
-	this.moveX(this.btElt, this.offsetX);
+	this.setBottom(this.btElt);
 
 	this.cubeElt.appendChild(this.frElt);
 	this.cubeElt.appendChild(this.bkElt);
@@ -63,36 +51,27 @@ Block3D.prototype = {
 		return this.cubeElt;
 	},
 
-	moveX : function(elt, value){
-		this.move(elt, "x", value);
+	setFront: function(elt){
+		set3dPosition(elt, this.offsetX, this.offsetY, this.offsetZ);
 	},
 
-	moveY : function(elt, value){
-		this.move(elt, "y", value);
+	setBack: function(elt){
+		setBack(elt, this.offsetX, -this.offsetY, this.offsetZ);
 	},
 
-	moveZ : function(elt, value){
-		this.move(elt, "z", value);
+	setRight: function(elt){
+		setRight(elt, "0", this.offsetY, this.offsetX + this.offsetZ);
 	},
 
-	move : function(elt, axis, value){
-		elt.style.transform += "translate"+axis.toUpperCase()+"("+value+"px)";
+	setLeft: function(elt){
+		setLeft(elt, "0", this.offsetY, -this.offsetX + this.offsetZ);
 	},
 
-	rotateX : function(elt, value){
-		this.rotate(elt, "x", value);
+	setTop: function(elt){
+		setTop(elt, this.offsetX, "0", -this.offsetY + this.offsetZ);
 	},
 
-	rotateY : function(elt, value){
-		this.rotate(elt, "y", value);
-	},
-
-	rotateZ : function(elt, value){
-		this.rotate(elt, "z", value);
-	},
-
-	rotate : function(elt, axis, value){
-		elt.style.transform += "rotate"+axis.toUpperCase()+"("+value+"deg)";
+	setBottom: function(elt){
+		setBottom(elt, this.offsetX, "0", this.offsetY + this.offsetZ);
 	}
 };
-
