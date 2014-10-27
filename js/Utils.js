@@ -186,6 +186,5 @@ function switchClass(elt, oldClass, newClass){
 	if (elt.classList.contains(oldClass)){
 		elt.classList.remove(oldClass);
 	}
-	
 	elt.classList.add(newClass);
 };

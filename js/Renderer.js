@@ -298,7 +298,11 @@ Renderer.prototype.renderHover = function(block, line, col){
 Renderer.prototype.afterHover = function(line, col){
 
 	if (this.game.isHover()){
-		switchClass(this.hoverBlockElt, "hover", "none");
+		if (this.hoverBlockElt != null){
+			switchClass(this.hoverBlockElt, "hover", "none");
+		} else {
+			debugger
+		}
 		this.board.stopHover();
 		this.game.ready();
 		this.hoverBlockElt = null;
@@ -668,11 +672,6 @@ Renderer.prototype.updateCursor = function(){
 	position = this.cursor.getPosition();
 	this.setPosition(this.cursorElt, position.y, position.x);
 	addOffsetY(this.cursorElt, -this.currOffset);
-}
-
-/** Returns the position CSS class given a line and col */ 
-Renderer.prototype.getPositionClass = function(line, col){
-	return "position-"+ line + "-" + col;
 }
 
 /** Returns a block DOM element given a line and column */
