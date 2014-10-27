@@ -6,12 +6,6 @@
  * Oct 2014
  */
 
-// Time a blocks hovers before falling
-var hoverTimeMillis = 1000; 
-
-// Time combos wait to explode
-var comboMillis = 1000;
-
 // Block Pixel sizes
 var blockSize = 48;
 var blockBorder = 5;
@@ -19,9 +13,16 @@ var size = blockSize + 2 * blockBorder;
 
 /** Constructor */
 function Renderer(game, board, cursor){
+
 	this.game = game;
 	this.board = board;
 	this.cursor = cursor;
+
+	// Time a blocks hovers before falling
+	this.hoverTimeMillis = 200; 
+
+	// Time combos wait to explode
+	this.comboMillis = 1000;
 
 	// Maximum pixel position 
 	this.maxHeightPx = (this.board.getWidth()-1)*size;
@@ -142,7 +143,7 @@ Renderer.prototype.refresh = function(){
 				this.comboTimeOut = window.setTimeout(function(){
 					parent.board.explodeCombos();
 					parent.comboTimeOut = null;
-				}, comboMillis);
+				}, this.comboMillis);
 			}
 			this.comboQueue = [];
 		}
@@ -213,16 +214,16 @@ Renderer.prototype.rise = function(amount){
 			}
 		}
 
-		// Grow new line
-		this.riseNewLine();
-
 		// Rise cursor
 		addOffsetY(this.cursorElt, -offset);
 
 		// Update current offset
 		this.currOffset += offset;
 
-		if (this.currOffset > size){
+		// Grow new line
+		this.growNewLine();
+
+		while (this.currOffset > size){
 			
 			// Lift board one line
 			this.board.lift();
@@ -237,7 +238,11 @@ Renderer.prototype.rise = function(amount){
 			this.currOffset = this.currOffset - size;
 
 			this.renderNewLine();
+
+			this.growNewLine();
+			this.riseNewLine();
 		}
+
 		this.riseFinished = true;
 	}
 	return true;
@@ -247,16 +252,24 @@ Renderer.prototype.rise = function(amount){
 Renderer.prototype.riseNewLine = function(){
 	var blockElts = document.getElementsByClassName("disabled");
 	for (var col = 0; col < blockElts.length; col++){
+		addOffsetY(blockElts[col], -this.currOffset);
+	}
+};
+
+/** Rises the new line the rate offset in pixels */
+Renderer.prototype.growNewLine = function(){
+	var blockElts = document.getElementsByClassName("disabled");
+	for (var col = 0; col < blockElts.length; col++){
 		blockElt = blockElts[col];
 		
 		if (this.currOffset >= blockSize){
 			blockElt.style.height = blockSize + "px";
 			blockElt.style.borderBottomWidth = this.currOffset - blockSize + "px";
+			
 		} else {
 			blockElt.style.height = this.currOffset + "px";
 			blockElt.style.borderBottomWidth = 0;
 		}
-		
 	}
 };
 
@@ -282,7 +295,7 @@ Renderer.prototype.setHoverTimeout = function(){
 			var pos = parent.board.getHoveringPos();
 			parent.afterHover(pos.y, pos.x);
 
-		}, hoverTimeMillis);
+		}, this.hoverTimeMillis);
 	}
 };
 

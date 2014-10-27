@@ -126,5 +126,5 @@ InputListener.prototype.swap = function(){
 /** Action on rise all blocks */
 InputListener.prototype.rise = function(){
 	if (!this.game.isGameOver())
-		this.renderer.rise(5);
+		this.renderer.rise(30);
 };
