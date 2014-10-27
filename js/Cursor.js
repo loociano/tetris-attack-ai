@@ -56,25 +56,27 @@
  					rightBlock.left();
  					isSwapping = true;
  				} else{
- 					console.info('Cannot swap this pair');
+ 					console.info('Cannot swap: left is ' + leftBlock.getState() + ', right is ' + rightBlock.getState());
  				}	
  			} else {
+ 				// Shifting Right
  				leftBlock.right();
  				isSwapping = true;
  			}
  		} else {
- 			console.info('Cannot swap: block is: '+ leftBlock.getState());
+ 			console.info('Cannot swap: left block is: '+ leftBlock.getState());
  		}
  	} else {
  		if (rightBlock != null){
  			if (rightBlock.isNone()){
+ 				// Shifting left
  				rightBlock.left();	
  				isSwapping = true;
  			} else {
- 				console.info('Cannot swap: block is: '+ leftBlock.getState());
+ 				console.info('Cannot swap: right block is: '+ rightBlock.getState());
  			}
  		} else {
- 			console.info('empty pair');
+ 			console.info('Empty pair');
  		}
  	}
  	return isSwapping;

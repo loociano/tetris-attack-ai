@@ -376,7 +376,7 @@ Board.prototype.enableNewLine = function(){
 
 /** Lifts all blocks one place upwards */
 Board.prototype.lift = function(){
-	for (var line = this.height - 1; line >= 0; line--){
+	for (var line = this.height - 2; line >= 0; line--){
 		for (var col = this.width - 1; col >= 0; col--){
 			var block = this.board[line][col];
 			if (block != null){

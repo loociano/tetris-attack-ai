@@ -70,6 +70,9 @@ function Renderer(game, board, cursor){
 	this.comboQueue = [];
 	this.explodeQueue = [];
 	this.fallQueue = [];
+
+	// Rise flag
+	this.riseFinished = true;
 }
 
 /** Renders all elements of the game */
@@ -94,7 +97,9 @@ Renderer.prototype.refresh = function(){
 				switch(block.getState()){
 
 					case "combo":
-						this.toComboQueue(block, line, col);
+						if (this.comboTimeOut == null){
+							this.toQueue(this.comboQueue, line, col);
+						}
 						break;
 
 					case "explode":
@@ -102,7 +107,7 @@ Renderer.prototype.refresh = function(){
 						break;
 
 					case "fall":
-						this.toFallQueue(block, line, col);
+						this.toQueue(this.fallQueue, line, col);
 						break;
 
 					case "right":
@@ -190,19 +195,21 @@ Renderer.prototype.renderGameOver = function(){
  */
 Renderer.prototype.rise = function(amount){
 
-	var offset = this.offsetRate;
-	if (amount != null) 
-		offset += amount;
+	if (!this.game.isCombo() && this.riseFinished){
 
-	var success = true;
+		this.riseFinished = false; // Set flag
 
-	if (!this.game.isCombo()){
+		var offset = this.offsetRate;
+		if (amount != null)
+			offset += amount;
+
 		// Rise blocks
 		var blockElts = document.getElementsByClassName("block");
 		for (var i = 0; i < blockElts.length; i++){
 			var blockElt = blockElts[i];
 			if (!addOffsetY(blockElt, -offset)){
-				success = false;
+				this.riseFinished = true;
+				return false;
 			}
 		}
 
@@ -226,14 +233,14 @@ Renderer.prototype.rise = function(amount){
 			// Add a new line
 			this.board.pushNewLine();
 
-			// Reset offset
+			// Reset current offset with the remaining
 			this.currOffset = this.currOffset - size;
 
 			this.renderNewLine();
-
 		}
+		this.riseFinished = true;
 	}
-	return success;
+	return true;
 };
 
 /** Rises the new line the rate offset in pixels */
@@ -253,11 +260,13 @@ Renderer.prototype.riseNewLine = function(){
 	}
 };
 
+/** Returns true is a given queue has finished */ 
 Renderer.prototype.queueFinished = function(queue){
-	for (var i = 0; i < queue.length; i++){
-		if (!queue[i].finished)
+
+	queue.forEach(function(e){
+		if (!e.finished)
 			return false;
-	}
+	});
 	return true;
 };
 
@@ -328,12 +337,8 @@ Renderer.prototype.renderCombo = function(block, line, col){
 /** Renders explode */
 Renderer.prototype.renderExplode = function(block, line, col){
 
-	this.explodeQueue.push({
-		line: line, 
-		col: col, 
-		finished: false
-	});
-
+	this.toQueue(this.explodeQueue, line, col);
+	
 	var blockElt = this.getBlockElt(line, col);
 
 	if (blockElt != null){
@@ -341,31 +346,32 @@ Renderer.prototype.renderExplode = function(block, line, col){
 			switchClass(blockElt, "combo", "explode");
 
 			// When animation finishes, delete element from DOM
-			blockElt.addEventListener('webkitTransitionEnd', this.afterExplode(blockElt, this.explodeQueue.length - 1), false);
+			blockElt.addEventListener('webkitTransitionEnd', this.afterExplode(blockElt, this.explodeQueue.length-1), false);
 		}
 	}
 };
 
-/** Adds an element to the falling queue */
-Renderer.prototype.toFallQueue = function(block, line, col){
-	this.fallQueue.push({
-		line: line, 
-		col: col, 
-		finished: false
-	});
-};
+/** Adds an element to a given queue */
+Renderer.prototype.toQueue = function(queue, line, col){
 
-/** Adds an element to the combo queue */
-Renderer.prototype.toComboQueue = function(block, line, col){
-
-	if (this.comboTimeOut == null){
-
-		this.comboQueue.push({
+	if (!this.isInQueue(queue)){
+			queue.push({
 			line: line, 
 			col: col, 
 			finished: false
 		});
 	}
+};
+
+/** Returns true if the given coordinates are in the combo queue */
+Renderer.prototype.isInQueue = function(queue, line, col){
+	
+	queue.forEach(function(e) {
+		if (e.line == line && e.col == col){
+			return true;
+		}
+	});
+	return false;
 };
 
 /** Renders the fall of blocks in queue */
@@ -502,6 +508,7 @@ Renderer.prototype.afterSwap = function(){
 		}
 	}
 
+	// Update model
 	this.board.swap(this.moveLine, this.moveCol);
 
 	// Reset swap variables

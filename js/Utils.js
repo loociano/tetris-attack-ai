@@ -122,6 +122,8 @@ function rotateRight(elt){
 	var array = get3dPosition(elt);
 	array[0] = "0";
 	array[2] = "-1";
+	array[8] = "1";
+	array[10] = "0";
 	set3dPositionArray(elt, array);
 };
 
