@@ -695,7 +695,7 @@ Renderer.prototype.getBlockElt = function(line, col){
 		var x = getPositionX(blockElt);
 		if (x == col * size){
 			var y = getPositionY(blockElt);
-			if (y <= maxY && y >= minY){
+			if (y <= maxY && y > minY){
 				return blockElt;
 			}
 		} 
