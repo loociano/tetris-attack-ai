@@ -8,18 +8,76 @@
 var states = ["ready", "swap", "hover", "combo", "gameover"];
 
 /** Game constructor */
- function Game(board){
+ function Game(){
 
- 	(board == undefined) ? 
- 		this.board = new Board() : 
- 		this.board = new Board(board, board[0].length, board.length);
+ 	this.board = new Board();
+ 	this.board2 = new Board();
 
  	this.id = null;
  	this.tickMills = 50;
 
  	// Pixels per second. Can be decimal.
- 	this.speed = 5;
+ 	this.speed = 0;
  }
+
+ /** Starts a new game */
+ Game.prototype.start = function(){
+
+ 	this.bodyElt = document.body;
+	this.containerElt = document.createElement("div");
+	this.containerElt.className = "container";
+	this.containerElt.id = "game";
+	this.bodyElt.appendChild(this.containerElt);
+
+ 	this.state = "ready";
+ 	this.points = 0;
+
+ 	// Player 1
+ 	this.cursor = new Cursor(this.board);
+ 	this.renderer = new Renderer(this, this.board, this.cursor);
+ 	this.input = new InputListener(this, this.cursor, this.renderer);
+ 	this.input.keyListen();
+
+ 	// Player 2
+ 	this.cursor2 = new Cursor(this.board2);
+ 	this.renderer2 = new Renderer(this, this.board2, this.cursor2);
+ 	this.input2 = new InputListener(this, this.cursor2, this.renderer2);
+ 	this.ai = new Ai(this.board2, this.input2);
+
+ 	this.renderer.render();
+ 	this.renderer2.render();
+
+ 	var parent = this;
+
+ 	this.id = window.setInterval(function(){
+ 		parent.board.applyGravity();
+ 		parent.board.searchCombos();
+ 		
+		parent.board2.applyGravity();
+ 		parent.board2.searchCombos();
+ 		
+ 		parent.renderer.refresh();
+ 		parent.renderer2.refresh();
+ 		
+ 		if (!parent.renderer.rise()){
+ 			parent.onGameOver();
+ 		}
+		if (!parent.renderer2.rise()){
+ 			parent.onGameOver();
+ 		}
+ 	}, this.tickMills);
+ };
+
+ /** Restarts game */
+ Game.prototype.restart = function(){
+ 	console.clear();
+ 	window.clearInterval(this.id);
+ 	this.board = new Board();
+ 	this.board2 = new Board();
+ 	this.renderer.clear();
+ 	this.renderer2.clear();
+ 	this.start();
+ };
 
 /** Adds points, one by default. Returns the number of points */
  Game.prototype.addPoint = function(points){
@@ -86,43 +144,9 @@ var states = ["ready", "swap", "hover", "combo", "gameover"];
  	return this.state;
  };
 
-/** Starts a new game */
- Game.prototype.start = function(){
-
- 	this.state = "ready";
- 	this.points = 0;
-
- 	this.ai = new Ai(this.board);
- 	this.cursor = new Cursor(this.board);
- 	this.renderer = new Renderer(this, this.board, this.cursor);
- 	this.input = new InputListener(this, this.cursor, this.renderer);
-
- 	this.renderer.render();
-
- 	var parent = this;
-
- 	this.id = window.setInterval(function(){
- 		parent.board.applyGravity();
- 		parent.board.searchCombos();
- 		parent.renderer.refresh();
- 		if (!parent.renderer.rise()){
- 			parent.onGameOver();
- 		}
- 	}, this.tickMills);
- };
-
 /** Game over */
  Game.prototype.onGameOver = function(){
  	window.clearInterval(this.id);
  	this.setGameOver();
  	this.renderer.renderGameOver();
- };
-
-/** Restarts game */
- Game.prototype.restart = function(){
- 	console.clear();
- 	window.clearInterval(this.id);
- 	this.board = new Board();
- 	this.renderer.clear();
- 	this.start();
  };

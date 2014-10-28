@@ -5,18 +5,46 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
- function Ai(board){
+ function Ai(board, input){
  	this.board = board;
+ 	this.input = input;
+ 	this.paceMillis = 200;
+
+ 	/** Discard any type of block that can't make a combo */
  	this.targetTypes = this.filterTypes();
 
- 	//this.getPoints();
+ 	this.getPoints();
+
+ 
+ 	var parent = this
+
+ 	this.id = window.setInterval(function(){
+ 		
+ 		var dice = Math.random();
+ 		if (dice < 0.25){
+ 			parent.input.up();	
+ 		} else {
+ 			if (dice < 0.5){
+ 				parent.input.down();
+ 			} else {
+ 				if (dice < 0.75){
+ 					parent.input.left();
+ 				} else {
+ 					parent.input.right();
+ 				}
+ 			}
+ 		}
+ 	}, this.paceMillis);
  }
 
 /** Returns the number of points */
  Ai.prototype.getPoints = function(){
- 	for(var i = 0; i < this.targetTypes.length; i++){
- 		console.log(this.targetTypes[i] + ": " + this.getLinePoints(this.targetTypes[i]) + " " + this.getColPoints(this.targetTypes[i]));
- 	}
+
+ 	var p = this;
+
+ 	this.targetTypes.forEach(function(e){
+ 		console.log("["+ e + "] line: " + p.getLinePoints(e) + " col: "+  p.getColPoints(e));
+ 	});
  };
 
 /** Return line points given a type */

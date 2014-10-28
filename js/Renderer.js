@@ -33,10 +33,7 @@ function Renderer(game, board, cursor){
 	// Current offset. To determine when to add a new block line.
 	this.currOffset = 0;
 
-	this.bodyElt = document.body;
-	this.containerElt = document.createElement("div");
-	this.containerElt.className = "container";
-	this.containerElt.id = "game";
+	this.containerElt = document.getElementById("game");
 
 	this.pointsElt = document.createElement("div");
 	this.pointsElt.className = "number";
@@ -81,7 +78,7 @@ Renderer.prototype.render = function(){
 	this.renderGrid();
 	this.renderBoard();
 	this.renderDisabledLine();
-	this.renderPoints();
+	//this.renderPoints();
 	this.renderCursor();
 };
 
@@ -658,7 +655,6 @@ Renderer.prototype.renderBoard = function(){
 		}
 	}
 	this.containerElt.appendChild(this.boardElt);
-	this.bodyElt.appendChild(this.containerElt);
 };
 
 /** Renders the new line */

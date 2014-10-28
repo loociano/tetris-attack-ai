@@ -29,7 +29,7 @@ function InputListener(game, cursor, renderer){
 	this.game = game;
 	this.renderer = renderer;
 	this.cursor = cursor;
-	this.keyListen();
+	//this.keyListen();
 }
 
 /** Listens to keyboard and triggers action */
