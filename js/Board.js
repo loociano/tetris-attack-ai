@@ -38,8 +38,12 @@ Board.prototype.getHoveringPos = function(){
 /** Returns hovering */
 Board.prototype.stopHover = function(){
 	var block = this.board[this.hoverPos.y][this.hoverPos.x];
-	block.setNone();
-	this.setHovering(null, null);
+	if (block != null){
+		block.setNone();
+		this.setHovering(null, null);
+	} else {
+		debugger
+	}
 };
 
 /** Returns board's height */
@@ -316,8 +320,8 @@ Board.prototype.generate = function(){
 	this.generateEmpty();
 	this.generateNewLine();
 
-	// Leave top-line empty
-	for (var line = 0; line < this.height - 1; line++){
+	// Leave two top lines always empty
+	for (var line = 0; line < this.height - 2; line++){
 		for (var col = 0; col < this.width; col++){
 			if (this.isBlockUnderneath(line, col)){
 				var block = this.generateBlock(line);
@@ -392,69 +396,49 @@ Board.prototype.setCorrectType = function(line, col){
 
 	var forbiddenTypes = [];
 
-	if (this.isComboLeft(line,col)){
+	if (this.isComboLeft(line, col)){
 		forbiddenTypes.push(this.board[line][col-1].getType());
 	}
-	if (this.isComboDown(line,col)){
+	if (this.isComboDown(line, col)){
 		forbiddenTypes.push(this.board[line-1][col].getType());
 	}
 	if (forbiddenTypes.length > 0){
-		var block = this.board[line][col];
-		block.setDistinctRandomType(forbiddenTypes);
+		this.board[line][col].setDistinctRandomType(forbiddenTypes);
 	}
 };
 
-/** Returns true if there are 3 horizontal blocks with same type */
+/** Returns true if the two blocks on the left have the same type */
 Board.prototype.isComboLeft = function(line, col){
-	if (col == 0) return false;
 
-	var block = this.board[line][col];
-	var count = 1;
+	if (col < 2) return false;
+	
+	var leftBlock = this.board[line][col-1];
+	var leftBlock2 = this.board[line][col-2];
 
-	// Iterate blocks on left side
-	for(var w = col - 1; w >= 0; w--){
+	if (leftBlock == null || leftBlock2 == null)
+		return false;
 
-		var leftBlock = this.board[line][w];
-
-		if (leftBlock == null)
-			return false;
-
-		if (leftBlock.compareType(block)){
-			count++;
-			if (count > 2){
-				return true;
-			} else {
-				continue;
-			}
-		} else {
-			return false;
-		}
-	}
-	return false;
+	if (leftBlock.getType() == leftBlock2.getType())
+		return true;
+	else
+		return false;
 };
 
-/** Returns true if there are 3 vertical blocks with same type */
+/** Returns true if the two blocks on below have the same type */
 Board.prototype.isComboDown = function(line, col){
-	if (line == 0) return false;
 
-	var block = this.board[line][col];
-	var count = 1;
+	if (line < 2) return false;
+	
+	var belowBlock = this.board[line-1][col];
+	var belowBlock2 = this.board[line-2][col];
 
-	// Iterate blocks on left side
-	for(var h = line - 1; h >= 0; h--){
-		var lowerBlock = this.board[h][col];
-		if (lowerBlock.compareType(block)){
-			count++;
-			if (count > 2){
-				return true;
-			} else {
-				continue;
-			}
-		} else {
-			return false;
-		}
-	}
-	return false;
+	if (belowBlock == null || belowBlock2 == null)
+		return false;
+
+	if (belowBlock.getType() == belowBlock2.getType())
+		return true;
+	else
+		return false;
 };
 
 /** Generate Blocks */
@@ -463,9 +447,9 @@ Board.prototype.generateBlock = function(line){
 	// Empty block probability: increases linearly with height
 	// Height 0 => probability 0
 	// Height maxHeight + 1 => probability 1
-	var emptyBlockProb = line / (2 * this.height);
+	var emptyBlockProb = line / (10 * this.height);
 	
-	if (Math.random() > emptyBlockProb)
+	if (line < this.height / 2 || Math.random() > emptyBlockProb)
 		return new Block();
 	else
 		return null;

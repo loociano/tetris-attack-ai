@@ -120,6 +120,7 @@ var states = ["ready", "swap", "hover", "combo", "gameover"];
 
 /** Restarts game */
  Game.prototype.restart = function(){
+ 	console.clear();
  	window.clearInterval(this.id);
  	this.board = new Board();
  	this.renderer.clear();

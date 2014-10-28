@@ -135,15 +135,16 @@ Block.prototype.getRandomType = function(){
 Block.prototype.setDistinctRandomType = function(forbiddenTypes){
 
 	var otherTypes = types.slice(0); // Copy types
+
 	for(var i = 0; i < forbiddenTypes.length; i++){
 		var index = otherTypes.indexOf(forbiddenTypes[i]);
 		if (index != -1){
 			otherTypes.splice(index, 1); // Remove given type
 		}
 	}
-	var random = Math.random() * (otherTypes.length - 1);
-	var randomInt = Math.floor(random);
-	this.type = otherTypes[randomInt];
+	var min = 0;
+	var max = otherTypes.length - 1;
+	this.type = otherTypes[getRandomInt(min, max)];
 };
 
 /** Returns type */
