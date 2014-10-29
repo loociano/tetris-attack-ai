@@ -80,6 +80,7 @@ InputListener.prototype.act = function(key){
 			break;
 
 		case "back":
+			this.back();
 			break;
 	}
 };
@@ -129,4 +130,9 @@ InputListener.prototype.swap = function(){
 InputListener.prototype.rise = function(){
 	if (!this.game.isGameOver())
 		this.renderer.rise(this.pixelRiseRate);
+};
+
+
+InputListener.prototype.back = function(){
+	this.app.launch();
 };

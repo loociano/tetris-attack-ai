@@ -27,6 +27,9 @@ UI.prototype = {
 		var twop = document.createElement("li");
 		twop.innerText = "Two Players";
 
+		var vscom = document.createElement("li");
+		vscom.innerText = "1P VS COM";
+
 		var howto = document.createElement("li");
 		howto.innerText = "How to Play";
 
@@ -35,6 +38,7 @@ UI.prototype = {
 
 		list.appendChild(onep);
 		list.appendChild(twop);
+		list.appendChild(vscom);
 		list.appendChild(howto);
 		list.appendChild(credits);
 

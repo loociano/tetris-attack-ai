@@ -8,7 +8,7 @@
  function Ai(board, input){
  	this.board = board;
  	this.input = input;
- 	this.paceMillis = 1000;
+ 	this.paceMillis = 200;
 
  	/** Discard any type of block that can't make a combo */
  	this.targetTypes = this.filterTypes();

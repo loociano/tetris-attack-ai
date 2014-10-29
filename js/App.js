@@ -1,30 +1,77 @@
 function App(){
 
-	// Game for player 1
-	this.game1 = null;
-
-	// Game for player 2
-	this.game2 = null;
-
  	this.id = null;
  	
  	// Update rate in milliseconds
  	this.tickMills = 50;
+
+ 	this.mode = null;
 }
 
 App.prototype = {
 
 	launch: function(){
+		
+		if (this.gameRenderer != null)
+			this.gameRenderer.clear();
+
 		this.UI = new UI();
 		this.listener = new MenuListener(this);
 	},
 	
 	/** Starts the app: initialises the two games */
-	start: function(){
+	start: function(mode){
+
+		if (this.id != null) window.clearInterval(this.id);
 
 		this.UI.remove();
 
 		this.gameRenderer = new GameRenderer();
+
+		this.mode = mode;
+
+		switch(this.mode){
+			
+			case "1p":
+				this.onePlayer();
+				break;
+			
+			case "2p":
+				this.twoPlayers();
+				break;
+			
+			case "vscom":
+				this.gameVSCOM();
+				break;
+		}
+		
+	},
+
+	onePlayer: function(){
+
+		this.game = new Game(this, "p1", 0);
+
+		var parent = this;
+
+	 	this.id = window.setInterval(function(){
+ 			parent.game.update();
+ 		}, this.tickMills);
+	},
+
+	twoPlayers: function(){
+
+		this.game1 = new Game(this, "p1", 0);
+		this.game2 = new Game(this, "p2", 0);
+
+		var parent = this;
+
+	 	this.id = window.setInterval(function(){
+ 			parent.game1.update();
+ 			parent.game2.update();
+ 		}, this.tickMills);
+	},
+
+	gameVSCOM: function(){
 
 		this.game1 = new Game(this, "p1", 0);
 		this.game2 = new Game(this, "com", 0);
@@ -40,8 +87,7 @@ App.prototype = {
 	/** Restarts the app */
 	restart: function(){
 		console.clear();
- 		window.clearInterval(this.id);
- 		this.start();
+ 		this.start(this.mode);
 	},
 
 	onGameOver: function(){

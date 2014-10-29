@@ -84,16 +84,17 @@ MenuListener.prototype = {
 		var index = this.getActiveEltIndex();
 		switch(index){
 			case 0:
-				alert('Available soon');
+				this.app.start("1p");
 				break;
 			case 1:
-				this.app.start();
+				this.app.start("2p");
 				break;
 			case 2:
-				alert('Available soon');
+				this.app.start("vscom");
 				break;
 			case 3:
-				alert('Available soon');
+				break;
+			case 4:
 				break;
 		}
 	},

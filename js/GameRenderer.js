@@ -5,14 +5,16 @@
  * Oct 2014
  */
 function GameRenderer(){
-
-	var elt = document.getElementById("game");
-	if (elt != null) elt.remove();
-
+	this.clear();
 	this.render();
 }
 
 GameRenderer.prototype = {
+
+	clear: function(){
+		var elt = document.getElementById("game");
+		if (elt != null) elt.remove();
+	},
 
 	/** Renders the game scenario */
 	render: function(){
