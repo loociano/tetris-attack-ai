@@ -54,8 +54,9 @@ div.board {
 	float: left;
 	background: #bbb;
 	border: 1.2em solid #eee;
-	border-radius: 1em;
+	border-radius: 2px;
 	margin: 10px 10px;
+	box-shadow: 1px 1px 5px #ccc;
 }
 
 div.line {

@@ -593,9 +593,9 @@ Renderer.prototype.renderNewLine = function(){
 
 /** Clears the content */
 Renderer.prototype.clear = function(){
-	var container = document.getElementById("game");
-	if (container != null)
-		container.remove();
+	var board = document.getElementsByClassName("board")[0];
+	if (board != null)
+		board.remove();
 };
 
 /** Renders the grid behind the blocks */
@@ -683,13 +683,17 @@ Renderer.prototype.updateCursor = function(){
 	addOffsetY(this.cursorElt, -this.currOffset);
 }
 
-/** Returns a block DOM element given a line and column */
+/** 
+ * Returns a block DOM element given a line and column.
+ * This function is key to avoid game crashing. 
+ */
 Renderer.prototype.getBlockElt = function(line, col){
 
 	var maxY = ((this.board.getHeight() - 1) - line) * size;
 	var minY = ((this.board.getHeight() - 1) - line - 1) * size;
 	
-	var blockElts = document.getElementsByClassName("block");
+	var classNames = "block " + this.board.getPlayer();
+	var blockElts = document.getElementsByClassName(classNames);
 	for (var i = 0; i < blockElts.length; i++){
 		var blockElt = blockElts[i];
 		var x = getPositionX(blockElt);
@@ -698,7 +702,7 @@ Renderer.prototype.getBlockElt = function(line, col){
 			if (y <= maxY && y > minY){
 				return blockElt;
 			}
-		} 
+		}
 	}
 	console.error('Block Not found');
 	debugger
@@ -707,5 +711,5 @@ Renderer.prototype.getBlockElt = function(line, col){
 
 /** Sets the class names for blocks */
 Renderer.prototype.setClassNames = function(blockElt, block){
-	blockElt.className = "tile block " + block.getType() + " " + block.getState();
+	blockElt.className = this.board.getPlayer() + " tile block " + block.getType() + " " + block.getState();
 };

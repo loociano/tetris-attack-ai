@@ -4,7 +4,14 @@
  * Luciano Rubio <luciano@loociano.com>
  * Oct 2014
  */
-function InputListener(game, cursor, renderer){
+function InputListener(app, game, cursor, renderer){
+
+	this.app = app;
+	this.game = game;
+	this.renderer = renderer;
+	this.cursor = cursor;
+
+	this.pixelRiseRate = 30;
 
 	this.map = {
 		13: "start", // Enter
@@ -25,11 +32,6 @@ function InputListener(game, cursor, renderer){
 		115: "down",
 		119: "up"
 	};
-
-	this.game = game;
-	this.renderer = renderer;
-	this.cursor = cursor;
-	//this.keyListen();
 }
 
 /** Listens to keyboard and triggers action */
@@ -70,7 +72,7 @@ InputListener.prototype.act = function(key){
 			break;
 
 		case "start":
-			this.hit();
+			this.restart();
 			break;
 
 		case "rise":
@@ -83,8 +85,8 @@ InputListener.prototype.act = function(key){
 };
 
 /** Action on hit */
-InputListener.prototype.hit = function(){
-	this.game.restart();
+InputListener.prototype.restart = function(){
+	this.app.restart();
 };
 
 /** Action on left */
@@ -119,12 +121,12 @@ InputListener.prototype.swap = function(){
 			this.game.ready();
 		}
 	} else {
-		console.info('Cant swap now: ' + this.game.getState());
+		console.info(this.game.getPlayer() + ' cannot swap: ' + this.game.getState());
 	}
 };
 
 /** Action on rise all blocks */
 InputListener.prototype.rise = function(){
 	if (!this.game.isGameOver())
-		this.renderer.rise(30);
+		this.renderer.rise(this.pixelRiseRate);
 };

@@ -8,7 +8,7 @@
  function Ai(board, input){
  	this.board = board;
  	this.input = input;
- 	this.paceMillis = 200;
+ 	this.paceMillis = 1000;
 
  	/** Discard any type of block that can't make a combo */
  	this.targetTypes = this.filterTypes();
@@ -34,6 +34,11 @@
  				}
  			}
  		}
+
+ 		if (dice < 0.5){
+ 			parent.input.swap();
+ 		}
+ 		
  	}, this.paceMillis);
  }
 
