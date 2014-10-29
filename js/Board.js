@@ -7,17 +7,25 @@
  */
 
 /** Constructor */
-function Board(board, width, height){
-	(width == undefined) ? this.width = 6 : this.width = width;
-	(height == undefined) ? this.height = 10 : this.height = height;
+function Board(player){
+
+	this.player = player;
+	
+	this.width = 6;
+	this.height = 10;
 
 	this.board = [];
 	this.newLine = []; // New line waiting below the board.
 
-	(board == undefined) ? this.generate() : this.board = board;
+	this.generate();
 
 	this.hoverPos = {x: null, y: null};
 }
+
+/** Returns player */
+Board.prototype.getPlayer = function(){
+	return this.player;
+};
 
 /** Returns hovering */
 Board.prototype.isHovering = function(){
@@ -303,17 +311,6 @@ Board.prototype.searchVerticalCombos = function(){
 	}
 };
 
-/** Generate empty board */
-Board.prototype.generateEmpty = function(width, height){
-	for (var h = 0; h < this.height; h++){
-		var line = [];
-		for (var w = 0; w < this.width; w++){
-			line.push(null);
-		}
-		this.board.push(line);
-	}
-};
-
 /** Generates a board with blocks */
 Board.prototype.generate = function(){
 
@@ -331,6 +328,17 @@ Board.prototype.generate = function(){
 				}
 			}
 		}
+	}
+};
+
+/** Generate empty board */
+Board.prototype.generateEmpty = function(width, height){
+	for (var h = 0; h < this.height; h++){
+		var line = [];
+		for (var w = 0; w < this.width; w++){
+			line.push(null);
+		}
+		this.board.push(line);
 	}
 };
 

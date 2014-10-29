@@ -43,17 +43,20 @@ body {
 }
 
 .container {
-	width: 24.9em;
-	margin: 10px 10px;
+	width: 815px;
+	margin: 0 auto;
 }
 
 div.board {
 	width: 348px;
 	height: 580px;
-	position: absolute;
+	position: relative;
+	float: left;
 	background: #bbb;
 	border: 1.2em solid #eee;
-	border-radius: 1em;
+	border-radius: 2px;
+	margin: 10px 10px;
+	box-shadow: 1px 1px 5px #ccc;
 }
 
 div.line {

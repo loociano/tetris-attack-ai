@@ -8,18 +8,48 @@
 var states = ["ready", "swap", "hover", "combo", "gameover"];
 
 /** Game constructor */
- function Game(board){
+ function Game(app, player, speed){
 
- 	(board == undefined) ? 
- 		this.board = new Board() : 
- 		this.board = new Board(board, board[0].length, board.length);
+ 	this.app = app;
 
- 	this.id = null;
- 	this.tickMills = 50;
+ 	this.player = player;
 
  	// Pixels per second. Can be decimal.
- 	this.speed = 5;
+ 	this.speed = speed;
+
+ 	this.start();
  }
+
+ /** Starts a new game */
+ Game.prototype.start = function(){
+
+ 	this.points = 0;
+ 	this.ready();
+
+ 	this.board = new Board(this.player);
+ 	this.cursor = new Cursor(this.board);
+ 	this.renderer = new Renderer(this, this.board, this.cursor);
+ 	this.input = new InputListener(this.app, this, this.cursor, this.renderer);
+ 	
+ 	if (this.player == "p1" || this.player == "p2"){
+ 		this.input.keyListen();
+ 	} else {
+ 		this.ai = new Ai(this.board, this.input);
+ 	}
+
+ 	this.renderer.render();
+ };
+
+/** Game update. Called each cycle from the app */
+ Game.prototype.update = function(){
+	this.board.applyGravity();
+	this.board.searchCombos();
+	this.renderer.refresh();
+
+	if (!this.renderer.rise()){
+		this.onGameOver();
+	}
+ };
 
 /** Adds points, one by default. Returns the number of points */
  Game.prototype.addPoint = function(points){
@@ -27,7 +57,12 @@ var states = ["ready", "swap", "hover", "combo", "gameover"];
  	return this.points;
  };
 
+ Game.prototype.getPlayer = function(){
+ 	return this.player;
+ };
+
  Game.prototype.setGameOver = function(){
+ 	console.log(this.player + " gameover");
  	this.state = "gameover";
  };
 
@@ -42,7 +77,7 @@ var states = ["ready", "swap", "hover", "combo", "gameover"];
 
 /** Sets game to swap */
  Game.prototype.swap = function(){
- 	console.log("swap");
+ 	console.log(this.player + " swap");
  	this.state = "swap";
  };
 
@@ -53,13 +88,13 @@ var states = ["ready", "swap", "hover", "combo", "gameover"];
 
 /** Sets game to combo */
  Game.prototype.combo = function(){
- 	console.log("combo");
+ 	console.log(this.player + " combo");
  	this.state = "combo";
  };
 
 /** Sets game state to hover */
  Game.prototype.hover = function(){
- 	console.log("hover");
+ 	console.log(this.player + " hover");
  	return this.state = "hover";
  };
 
@@ -71,7 +106,7 @@ var states = ["ready", "swap", "hover", "combo", "gameover"];
 /** Sets game ready */
  Game.prototype.ready = function(){
  	if (!this.isGameOver()){
- 		console.log("ready");
+ 		console.log(this.player + " ready");
  		this.state = "ready";
  	}
  };
@@ -86,43 +121,9 @@ var states = ["ready", "swap", "hover", "combo", "gameover"];
  	return this.state;
  };
 
-/** Starts a new game */
- Game.prototype.start = function(){
-
- 	this.state = "ready";
- 	this.points = 0;
-
- 	this.ai = new Ai(this.board);
- 	this.cursor = new Cursor(this.board);
- 	this.renderer = new Renderer(this, this.board, this.cursor);
- 	this.input = new InputListener(this, this.cursor, this.renderer);
-
- 	this.renderer.render();
-
- 	var parent = this;
-
- 	this.id = window.setInterval(function(){
- 		parent.board.applyGravity();
- 		parent.board.searchCombos();
- 		parent.renderer.refresh();
- 		if (!parent.renderer.rise()){
- 			parent.onGameOver();
- 		}
- 	}, this.tickMills);
- };
-
 /** Game over */
  Game.prototype.onGameOver = function(){
- 	window.clearInterval(this.id);
  	this.setGameOver();
+ 	this.app.onGameOver();
  	this.renderer.renderGameOver();
- };
-
-/** Restarts game */
- Game.prototype.restart = function(){
- 	console.clear();
- 	window.clearInterval(this.id);
- 	this.board = new Board();
- 	this.renderer.clear();
- 	this.start();
  };
