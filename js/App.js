@@ -1,10 +1,10 @@
 function App(){
 
 	// Game for player 1
-	this.game1;
+	this.game1 = null;
 
 	// Game for player 2
-	this.game2;
+	this.game2 = null;
 
  	this.id = null;
  	
@@ -13,9 +13,16 @@ function App(){
 }
 
 App.prototype = {
+
+	launch: function(){
+		this.UI = new UI();
+		this.listener = new MenuListener(this);
+	},
 	
 	/** Starts the app: initialises the two games */
 	start: function(){
+
+		this.UI.remove();
 
 		this.gameRenderer = new GameRenderer();
 

@@ -13,6 +13,7 @@ function GameRenderer(){
 }
 
 GameRenderer.prototype = {
+
 	/** Renders the game scenario */
 	render: function(){
 		this.bodyElt = document.body;

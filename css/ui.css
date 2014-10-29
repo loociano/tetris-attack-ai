@@ -1,0 +1,79 @@
+/* UI */
+@font-face {
+	font-family: 'Petyka';
+	src: url('../fonts/petyka.ttf');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Minecraftia';
+	src: url('../fonts/minecraftia.ttf');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'PressStart2P';
+	src: url('../fonts/PressStart2P.ttf');
+	font-weight: normal;
+	font-style: normal;
+}
+
+/* Background */
+@keyframes animatedBackground {
+	from { 
+		background-position: 0 0; }
+	to { 
+		background-position: 0 -500px;
+	}
+}
+
+@-webkit-keyframes animatedBackground {
+	from { 
+		background-position: 0 0; 
+	}
+	to { 
+		background-position: 0 -518px;
+	}
+}
+
+body.ui {
+	text-align: center;
+	background: #383838;
+	background-image: url(../imgs/bg.jpg);
+	background-repeat: repeat-x repeat-y;
+	background-position: 0 0;
+	animation: animatedBackground 40s linear infinite;
+	-webkit-animation: animatedBackground 40s linear infinite;
+} 
+
+#ui {
+	position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -100px;
+    margin-left: -350px;
+    width: 700px;
+    height: 300px;
+}
+
+#ui h1 {
+	color: #fff;
+	text-shadow: 0px 1px 0px #999, 0px 2px 0px #888, 0px 3px 0px #777, 0px 4px 0px #666, 0px 5px 0px #555, 0px 6px 0px #444, 0px 7px 0px #333, 0px 8px 7px #001135;
+	font: 50px 'Petyka';
+	margin: 0 0 40px 0;
+}
+
+#ui li {
+	color: #5B6E83;
+	list-style-type: none;
+	font: 20px 'PressStart2P';
+	margin: 0 0 20px 0;
+}
+
+#ui li.active {
+	color: #fff;
+	text-shadow: 0 0 5px #f4acca, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ff2d95, 0 0 30px #ff2d95, 0 0 40px #ff2d95, 0 0 50px #ff2d95, 0 0 75px #ff2d95;
+	letter-spacing: 2px;
+}
