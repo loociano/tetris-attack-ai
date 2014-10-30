@@ -24,9 +24,9 @@ App.prototype = {
 
 		if (this.id != null) window.clearInterval(this.id);
 
-		this.UI.remove();
+		if (this.UI) this.UI.remove();
 
-		this.gameRenderer = new GameRenderer();
+		this.gameRenderer = new GameRenderer(mode);
 
 		this.mode = mode;
 

@@ -1,8 +1,48 @@
+html {
+	height: 100%;
+}
+
 body {
 	margin: 0;
-	padding: 0;
-	font-family: 'Verdana';
-	background: #ddd;
+  	padding: 0;
+  	height: 100%;
+    background-color: #434343;
+    background-image: radial-gradient(#81347D, #200320);
+}
+
+#bg-grid {
+	background-color: transparent;
+    background-image: linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent);
+  	height: 100%;
+  	background-size: 50px 50px;
+}
+
+.container {
+	width: 815px;
+	margin: 0 auto;
+}
+
+.container.mode-1p {
+	width: 348px;
+}
+
+/* First player */
+div.board {
+	width: 348px;
+	height: 580px;
+	position: relative;
+	float: left;
+	background: rgba(226, 37, 224, 0.12);
+	margin: 20px 10px 0 10px;
+	/*border: 1px solid #EC55E4;
+	box-shadow: 0px 0px 5px #EF93C7;*/
+}
+
+/* Second player */
+div.board + div.board {
+	background: rgba(97, 89, 213, 0.19);
+	/*border: 1px solid rgb(0, 119, 255);
+	box-shadow: 0px 0px 5px rgb(59, 81, 232), 0px 0px 10px rgb(77, 138, 207);*/
 }
 
 #game-over {
@@ -38,27 +78,6 @@ body {
 	padding: 9px;
 }
 
-#heading {
-	margin: 0 auto;
-}
-
-.container {
-	width: 815px;
-	margin: 0 auto;
-}
-
-div.board {
-	width: 348px;
-	height: 580px;
-	position: relative;
-	float: left;
-	background: #bbb;
-	border: 1.2em solid #eee;
-	border-radius: 2px;
-	margin: 10px 10px;
-	box-shadow: 1px 1px 5px #ccc;
-}
-
 div.line {
 	margin: 0;
 }
@@ -86,6 +105,7 @@ div.line {
 }
 
 .empty {
+	display: none;
 	border: 0.35em solid rgb(189, 189, 189);
 	background-color: #B8B8B8;
 	border-radius: 10px;
@@ -94,7 +114,7 @@ div.line {
 
 .block {
 	border: 0.35em solid #4c4c4c;
-	box-shadow: 2px 2px 5px #999;
+	/*box-shadow: 2px 2px 5px #999;*/
 	z-index: 2;
 	transition: 0.03s ease-out;
 }

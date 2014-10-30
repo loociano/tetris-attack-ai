@@ -50,6 +50,7 @@ UI.prototype = {
 
 	remove: function(){
 		this.body.className = "";
-		this.ui.remove();
+		if (this.ui != null)
+			this.ui.remove();
 	}
 }
